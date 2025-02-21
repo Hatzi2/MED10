@@ -5,6 +5,7 @@
   - [Tesseract OCR](#tesseract-ocr)
   - [Poppler for Windows](#poppler-for-windows)
 - [Ollama Setup](#ollama-setup)
+- [Python Environment Setup] (#python-environment)
 - [License](#license)
 
 ## OCR Setup
@@ -48,6 +49,16 @@ To set up Ollama, follow these steps:
      ollama run deepseek-r1
      ollama run mistral
      ollama run phi4
+     ```
+
+## Python Environment Setup
+
+To set up Python packages for your environment, follow these steps:
+
+1. **Install the requirements.txt file**
+    - Use the following command to install the requirements.txt file:
+    ```bash
+     pip install -r requirements.txt
      ```
 
 ## License
