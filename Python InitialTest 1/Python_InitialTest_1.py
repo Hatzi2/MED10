@@ -1,16 +1,10 @@
 import requests
-import fitz  # PyMuPDF
 import os
 import psutil
 import GPUtil
 import threading
 import time
 import json
-
-# Function to extract text from a PDF file
-def extract_text_from_pdf(pdf_path):
-    with fitz.open(pdf_path) as doc:
-        return "\n".join([page.get_text() for page in doc])
 
 # Function to load ground truth data from a JSON file
 def load_ground_truth(json_path):
@@ -27,15 +21,16 @@ def load_ground_truth(json_path):
         print(f"Error decoding JSON from the file: {json_path}")
         exit()
 
-# Define the directory containing PDF files and the JSON file
-pdf_dir = r"C:\Users\jonas\Desktop\PDFTesting"
+# Define the directory containing the text file and the JSON file
+txt_dir = r"C:\Users\jonas\Desktop\OutputFolder"  # Path to the folder containing the text file
 json_file_path = r"C:\Users\jonas\Desktop\JsonGroundTruth\financial_report.json"  # Path to your JSON file
-pdf_files = [f for f in os.listdir(pdf_dir) if f.endswith(".pdf")]
-model = "llama3.2" #Modellen der skal bruges
 
-# Ensure there is at least one PDF to compare
-if len(pdf_files) < 1:
-    print("Error: Need at least one PDF file for comparison.")
+# Get the list of .txt files in the directory
+txt_files = [f for f in os.listdir(txt_dir) if f.endswith(".txt")]
+
+# Ensure there is exactly one text file to compare
+if len(txt_files) != 1:
+    print("Error: There should be exactly one TXT file for comparison.")
     exit()
 
 # Check if the JSON file exists
@@ -46,23 +41,31 @@ if not os.path.exists(json_file_path):
 # Load ground truth data from JSON file
 ground_truth = load_ground_truth(json_file_path)
 
-# Extract text from all PDF files
-pdf_texts = {pdf_file: extract_text_from_pdf(os.path.join(pdf_dir, pdf_file)) for pdf_file in pdf_files}
+# Read the contents of the text file
+txt_file_path = os.path.join(txt_dir, txt_files[0])
+with open(txt_file_path, 'r') as f:
+    txt_content = f.read()
 
 # Create the prompt for comparison
-pdf_texts_str = "\n\n".join([f"File ({pdf_file}):\n{pdf_texts[pdf_file]}" for pdf_file in pdf_files])
 prompt = (
-    f"Compare the extracted information from the following PDF files against the ground truth data.\n\n"
+    f"Compare the extracted information from the following text file against the ground truth data.\n\n"
     f"Ground Truth:\n{json.dumps(ground_truth, indent=2)}\n\n"
-    f"{pdf_texts_str}\n\n"
-    f"Please identify any discrepancies between the PDF contents and the ground truth."
+    f"Text File Content:\n{txt_content}\n\n"
+    f"Please identify any discrepancies between the text file contents and the ground truth."
 )
 
 url = "http://localhost:11434/api/generate"
 data = {
-    "model": model,
+    "model": "llama3.2",
     "prompt": prompt,
-    "stream": False
+    "stream": False,
+    "options": {
+        "temperature": 0.7,
+        "num_predict": 1000,
+        "top_p": 0.8,
+        "top_k": 1,
+        "repeat_penalty": 1.1,
+    }
 }
 
 # Function to monitor resource usage in real-time
