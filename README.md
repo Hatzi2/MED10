@@ -30,7 +30,7 @@ To set up Poppler for Windows, follow these steps:
 
 2. **Add Poppler to PATH:**
    - Ensure the Poppler directory is added to your system's PATH environment variable.
-     - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to Poppler's bin directory. It's recommended to move Poppler to C:\Program Files. An example of a correct PATH would be C:\Program Files\poppler-24.08.0\Library\bin.
+     - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to Poppler's bin directory. It's recommended to move the Poppler directory to C:\Program Files. An example of a correct PATH would be C:\Program Files\poppler-24.08.0\Library\bin.
 
 ## Ollama Setup
 
