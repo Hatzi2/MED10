@@ -1,3 +1,4 @@
+from pathlib import Path
 import requests
 import os
 import psutil
@@ -22,8 +23,8 @@ def load_ground_truth(json_path):
         exit()
 
 # Define the directory containing the text file and the JSON file
-txt_dir = r"C:\Users\jonas\Desktop\OutputFolder"  # Path to the folder containing the text file
-json_file_path = r"C:\Users\jonas\Desktop\JsonGroundTruth\Ornevej-45.json"  # Path to your JSON file
+txt_dir = Path("Files\Policer") # Path to the folder containing the text file
+json_file_path = Path("Files\Ground truth\Ornevej-45.json")  # Path to your JSON file
 
 # Get the list of .txt files in the directory
 txt_files = [f for f in os.listdir(txt_dir) if f.endswith(".txt")]
@@ -37,9 +38,6 @@ if len(txt_files) != 1:
 if not os.path.exists(json_file_path):
     print(f"Error: The JSON file does not exist at the specified path: {json_file_path}")
     exit()
-
-import json
-import os
 
 def remove_href(data):
     """ Recursively remove all 'href' keys from JSON data. """
