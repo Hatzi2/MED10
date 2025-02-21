@@ -5,7 +5,7 @@
   - [Tesseract OCR](#tesseract-ocr)
   - [Poppler for Windows](#poppler-for-windows)
 - [Ollama Setup](#ollama-setup)
-- [Python Environment Setup] (#python-environment)
+- [Python Environment Setup](#python-environment-setup)
 - [License](#license)
 
 ## OCR Setup
@@ -30,7 +30,7 @@ To set up Poppler for Windows, follow these steps:
 
 2. **Add Poppler to PATH:**
    - Ensure the Poppler directory is added to your system's PATH environment variable.
-     - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to Poppler's bin directory. It's recommended to move Poppler to C:\Program Files. An example of a correct PATH would be C:\Program Files\Poppler\Library\bin.
+     - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to Poppler's bin directory. It's recommended to move Poppler to C:\Program Files. An example of a correct PATH would be C:\Program Files\poppler-24.08.0\Library\bin.
 
 ## Ollama Setup
 
@@ -55,7 +55,7 @@ To set up Ollama, follow these steps:
 
 To set up Python packages for your environment, follow these steps:
 
-1. **Install the requirements.txt file**
+1. **Install the requirements.txt file:**
     - Use the following command to install the requirements.txt file:
     ```bash
      pip install -r requirements.txt
