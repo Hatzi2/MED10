@@ -15,7 +15,7 @@ def load_ground_truth(json_path):
     except PermissionError:
         print(f"Permission denied: Unable to read the file at {json_path}")
         exit()
-    except FileNotFoundError:
+    except FileNotFoundError:   
         print(f"File not found: {json_path}")
         exit()
     except json.JSONDecodeError:
@@ -74,7 +74,7 @@ prompt = (
 
 url = "http://localhost:11434/api/generate"
 data = {
-    "model": "phi4",
+    "model": "llama3.2",
     "prompt": prompt,
     "stream": False,
     "options": {

@@ -6,6 +6,16 @@ __pycache__/
 # C extensions
 *.so
 
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userprefs
+*.tlog
+*.log
+*.pdb
+*.obj
+
 # Distribution / packaging
 .Python
 build/
