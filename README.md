@@ -13,7 +13,7 @@
 ### Tesseract OCR
 To set up Tesseract OCR, follow these steps:
 
-1. **Download and Install Tesseract OCR:**
+1. **Download and Install the Tesseract-OCR.exe:**
    - GitHub: [UB Mannheim Tesseract Wiki](https://github.com/UB-Mannheim/tesseract/wiki)
    - During installation, ensure to check the boxes for additional languages if desired.
 
