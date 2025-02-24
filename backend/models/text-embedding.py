@@ -6,7 +6,8 @@ from sentence_transformers import SentenceTransformer, util
 def load_json(json_path):
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    address = {k: v for k, v in data.get("address", {}).items() if k != "href"}  # Ignore href
+    """address = {k: v for k, v in data.get("address", {}).items() if k != "href"}  # Ignore href """
+    address = {k: v for k, v in data.get("address", {}).items() if k not in ["href", "streetCode"]}  # Ignore href and streetCode
     return address, data.get("areaSize", None)
 
 def load_text(text_path):
@@ -26,8 +27,8 @@ def extract_entities(text, json_address):
     postal_code = str(json_address.get("postalCode", ""))
     postal_district = json_address.get("postalDistrict", "")
     
-    # Look for street name + house number combinations
-    address_pattern = fr'({street_name})\s+({house_number})|({house_number})\s+({street_name})'
+    # Look for street name + house number combinations with optional floor/side indicators
+    address_pattern = fr'({street_name})\s+({house_number}(?:\s*(?:st|th|mf|tv|kl|[1-9])\.?|,?\s*(?:st|th|mf|tv|kl|[1-9])\.?)*?)|({house_number}(?:\s*(?:st|th|mf|tv|kl|[1-9])\.?|,?\s*(?:st|th|mf|tv|kl|[1-9])\.?)*?)\s+({street_name})'
     postal_pattern = fr'({postal_code})\s+({postal_district})|({postal_district})\s+({postal_code})'
     
     address_match = re.search(address_pattern, text, re.IGNORECASE)
@@ -36,7 +37,7 @@ def extract_entities(text, json_address):
     if address_match:
         entities_list.append({
             "streetName": street_name,
-            "houseNumber": house_number,
+            "houseNumber": address_match.group(2) or address_match.group(3),
             "postalCode": postal_code if postal_match else None,
             "postalDistrict": postal_district if postal_match else None
         })
@@ -60,7 +61,7 @@ def compare_address(json_address, text):
 
 def compare_area_size(json_area_size, text):
     """Find area size near relevant keywords to avoid misidentification."""
-    area_pattern = re.compile(r'(\d{2,4})\s?(?:m?|m²|square meters|sqm|kvadratmeter|kvm)', re.IGNORECASE)
+    area_pattern = re.compile(r'(\d{2,4})\s?(?:~m²|square meters|sqm|kvadratmeter|kvm|m\?)', re.IGNORECASE)
     matches = area_pattern.findall(text)
     
     found_match = next((m for m in matches if int(m) == json_area_size), None)
