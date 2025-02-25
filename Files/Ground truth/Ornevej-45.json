@@ -1,4 +1,28 @@
 {
+    "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53",
+    "cadastres": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/cadastres"
+    },
+    "agreementConditions": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/agreement-conditions"
+    },
+    "collateralConditions": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/collateral-conditions/6b55c9c7-c483-4583-871c-c8898a22a58b",
+        "id": "6b55c9c7-c483-4583-871c-c8898a22a58b"
+    },
+    "mortgageConditions": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/mortgage-conditions"
+    },
+    "values": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/values"
+    },
+    "usageCategory": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/usage-categories/single-family-home",
+        "id": "single-family-home"
+    },
+    "buildingDescription": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/building-description"
+    },
     "address": {
         "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/address",
         "streetName": "Ørnevej",
@@ -7,6 +31,58 @@
         "postalCode": "9230",
         "postalDistrict": "Svenstrup J"
     },
- 
+    "addressLabel": {
+        "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/address-label",
+        "label": [
+            "Ørnevej 45",
+            "9230 Svenstrup J"
+        ]
+    },
+    "id": "bfc38b55-2efd-4e48-9c89-822b86ac5b53",
+    "realPropertyNumber": 531878,
+    "pollutionFlag": false,
+    "buildingOnRentedLandFlag": false,
+    "buildingOnSharedLandFlag": false,
+    "rentedPropertyFlag": false,
+    "mixedUsagePropertyFlag": false,
+    "perfectShareFlag": false,
+    "bbrNumber": "6610051582",
+    "bfeProperties": [
+        {
+            "bfeNumber": "4488486",
+            "type": "JOINT_REAL_PROPERTY",
+            "cadastre": {
+                "href": "https://real-property.services.nykredit.it:443/real-property/real-properties/bfc38b55-2efd-4e48-9c89-822b86ac5b53/cadastres/e7c0bc9a-82bb-4473-81fa-0e86e3aa65bf",
+                "id": "e7c0bc9a-82bb-4473-81fa-0e86e3aa65bf"
+            }
+        }
+    ],
+    "condominiums": [],
+    "countryCode": "DK",
+    "municipalityCode": 661,
+    "municipalityName": "Svenstrup J",
+    "publicRealPropertyNumber": 51582,
+    "constructionYear": 1969,
+    "publicUsageCategory": {
+        "publicUsageCategoryCode": "01",
+        "displayName": "Beboelse"
+    },
+    "publicValuation": {
+        "propertyValue": {
+            "value": 830000.0,
+            "currency": "DKK"
+        },
+        "landAreaValue": {
+            "value": 95400.0,
+            "currency": "DKK"
+        },
+        "valuationYear": 2020
+    },
+    "growthAreaFlag": false,
+    "landRegisterMatch": {
+        "succeededFlag": true,
+        "requestDateTime": "2025-02-12T09:44:08.584",
+        "responseDateTime": "2025-02-12T10:13:19.722"
+    },
     "areaSize": 195
 }
