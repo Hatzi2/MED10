@@ -6,9 +6,11 @@ from sentence_transformers import SentenceTransformer, util
 def load_json(json_path):
     with open(json_path, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    """address = {k: v for k, v in data.get("address", {}).items() if k != "href"}  # Ignore href """
-    address = {k: v for k, v in data.get("address", {}).items() if k not in ["href", "streetCode"]}  # Ignore href and streetCode
-    return address, data.get("areaSize", None)
+    
+    address = {k: str(v) for k, v in data.get("address", {}).items() if k not in ["href", "streetCode"]}  # Ignore href and streetCode
+    area_size = str(data.get("areaSize", ""))  # Convert int to string for similarity comparison
+    
+    return address, area_size
 
 def load_text(text_path):
     with open(text_path, 'r', encoding='utf-8') as f:
@@ -23,8 +25,8 @@ def extract_entities(text, json_address):
     entities_list = []
     
     street_name = json_address.get("streetName", "")
-    house_number = str(json_address.get("houseNumber", ""))
-    postal_code = str(json_address.get("postalCode", ""))
+    house_number = json_address.get("houseNumber", "")
+    postal_code = json_address.get("postalCode", "")
     postal_district = json_address.get("postalDistrict", "")
     
     # Look for street name + house number combinations with optional floor/side indicators
@@ -60,35 +62,46 @@ def compare_address(json_address, text):
     return best_match, similarity_score, json_address if similarity_score < 0.85 else None
 
 def compare_area_size(json_area_size, text):
-    """Find area size near relevant keywords to avoid misidentification."""
+    """Find area size near relevant keywords to avoid misidentification and compute similarity."""
     area_pattern = re.compile(r'(\d{2,4})\s?(?:~m²|square meters|sqm|kvadratmeter|kvm|m\?)', re.IGNORECASE)
     matches = area_pattern.findall(text)
     
-    found_match = next((m for m in matches if int(m) == json_area_size), None)
-    return found_match, json_area_size if not found_match else None
+    found_match = next((m for m in matches if int(m) == int(json_area_size)), None)
+    
+    # Compute similarity
+    found_match_str = str(found_match) if found_match else ""
+    area_similarity = util.pytorch_cos_sim(
+        sbert_model.encode(json_area_size, convert_to_tensor=True),
+        sbert_model.encode(found_match_str, convert_to_tensor=True)
+    ).item() if found_match else 0
+
+    return found_match, area_similarity, json_area_size if area_similarity < 0.85 else None
 
 def main(json_file, text_file):
     json_address, json_area_size = load_json(json_file)
     extracted_text = load_text(text_file)
     
     best_address, address_similarity, address_mismatch = compare_address(json_address, extracted_text)
-    found_area_size, area_mismatch = compare_area_size(json_area_size, extracted_text)
+    found_area_size, area_similarity, area_mismatch = compare_area_size(json_area_size, extracted_text)
     
     print("\nComparison Results:")
     print(f"Expected Address: {json_address}")
     print(f"Best Matched Address: {best_address}")
+    print(f"Address Similarity Score: {address_similarity:.2f}")
+    
     print(f"Expected Area Size: {json_area_size}")
     print(f"Best Matched Area Size: {found_area_size}")
+    print(f"Area Size Similarity Score: {area_similarity:.2f}")
     
     if address_mismatch:
-        print(f"Mismatched Address Fields: {address_mismatch}, Similarity: {address_similarity:.2f}")
+        print(f"Mismatched Address Fields: {address_mismatch}")
     else:
-        print(f"Address matches correctly. Similarity: {address_similarity:.2f}")
-    
+        print(f"Address matches correctly.")
+
     if area_mismatch:
         print(f"Mismatched Area Size: Expected {area_mismatch}, but not found in document.")
     else:
-        print(f"Area size matches correctly. Expected and found: {found_area_size}")
+        print(f"Area size matches correctly.")
 
 # Example usage
 json_path = "Files/Ground truth/Ornevej-45.json"
