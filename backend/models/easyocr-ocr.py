@@ -7,12 +7,21 @@ import easyocr
 import numpy as np
 import time
 import cv2  # For image conversion if needed
+import torch  # Used to check GPU availability
 
-def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
+def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True):
+    # Check for GPU availability
+    if use_gpu:
+        if torch.cuda.is_available():
+            print("CUDA GPU is available. Using GPU for OCR.")
+        else:
+            print("CUDA GPU is not available. Running on CPU.")
+            use_gpu = False  # Fallback to CPU
+
     # Convert PDF pages to images
     images = convert_from_path(pdf_path)
     extracted_text = ""
-    confidence_scores = []  # To store average confidence per page when needed
+    confidence_scores = []  # To store average confidence per page
 
     # Ensure the output folder exists
     output_folder.mkdir(parents=True, exist_ok=True)
@@ -20,8 +29,8 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     # EasyOCR uses "da" for Danish language
     lang_code = "da" if lang.lower() in ["dan", "danish"] else lang
     
-    # Initialize the EasyOCR Reader
-    reader = easyocr.Reader([lang_code])
+    # Initialize the EasyOCR Reader with GPU parameter
+    reader = easyocr.Reader([lang_code], gpu=use_gpu)
     
     # Start the timer
     start_time = time.time()
@@ -31,7 +40,6 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
         # Convert PIL image to a NumPy array
         image_np = np.array(image)
         
-        # When including confidence, use detailed output; otherwise, simple text output.
         if include_confidence:
             results = reader.readtext(image_np, detail=1)
             page_text = ""
@@ -39,12 +47,10 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
             for bbox, text, conf in results:
                 page_text += text + " "
                 page_confidences.append(conf * 100)  # Convert to percentage
-            # Compute and store the average confidence for the page
             avg_conf = np.mean(page_confidences) if page_confidences else 0
             confidence_scores.append(avg_conf)
             print(f"Page {i + 1}: Confidence Score = {avg_conf:.2f}%")
         else:
-            # detail=0 returns only text strings
             results = reader.readtext(image_np, detail=0)
             page_text = " ".join(results)
         
@@ -55,10 +61,9 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     with text_file_path.open("w", encoding="utf-8") as text_file:
         text_file.write(extracted_text)
     
-    # Calculate the total elapsed time
+    # Calculate elapsed time
     elapsed_time = time.time() - start_time
 
-    # If confidence scores were computed, print the overall average confidence
     if include_confidence and confidence_scores:
         overall_avg_conf = np.mean(confidence_scores)
         print(f"\nOverall Average Confidence Score: {overall_avg_conf:.2f}%")
@@ -68,5 +73,4 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 # Example usage:
 pdf_path = Path("Files/policer-Raw/Husforsikring - Ornevej 45.pdf")  # Replace with your PDF file path
 output_folder = Path("Files/Policer")  # Ensure this is a directory
-# Toggle include_confidence=True to compute and print confidence scores, or False to skip it.
-pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True)
+pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True)
