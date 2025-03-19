@@ -44,15 +44,32 @@ def chunk_text_with_overlap(text, chunk_size, overlap):
         i += chunk_size - overlap  # move forward by (chunk_size - overlap) words
     return chunks
 
-def create_faiss_index(chunks, model):
+def create_faiss_index(chunks, model, nlist=7):
     """
-    Encode each chunk and build a FAISS index using L2 distance.
+    Encode each chunk and build a FAISS IVF (Inverted File) index using L2 distance.
+    
+    :param chunks: List of text chunks to be embedded and indexed.
+    :param model: SentenceTransformer model to encode text into vectors.
+    :param nlist: Number of clusters for IVF indexing (default: 100).
+    :return: Trained FAISS index.
     """
-    embeddings = model.encode(chunks, show_progress_bar=False)
+    # Encode text chunks into embeddings
+    embeddings = model.encode(chunks, show_progress_bar=True)
     embeddings = np.array(embeddings, dtype='float32')
+    
+    # Get embedding dimension
     dim = embeddings.shape[1]
-    index = faiss.IndexFlatL2(dim)
+
+    # Create FAISS index with IVF clustering (nlist = number of clusters)
+    quantizer = faiss.IndexFlatL2(dim)  # Base index for clustering
+    index = faiss.IndexIVFFlat(quantizer, dim, nlist, faiss.METRIC_L2)
+
+    # Train the index (IVF needs training before adding vectors)
+    index.train(embeddings)  
+
+    # Add vectors to the index
     index.add(embeddings)
+
     return index
 
 def search_faiss(query, model, index, chunks, top_k=TOP_K):
@@ -60,7 +77,7 @@ def search_faiss(query, model, index, chunks, top_k=TOP_K):
     Retrieve top_k chunk matches from FAISS for 'query'.
     Return a list of (chunk_text, distance).
     """
-    query_emb = model.encode([query], show_progress_bar=False).astype('float32')
+    query_emb = model.encode([query], show_progress_bar=True).astype('float32')
     distances, idxs = index.search(query_emb, top_k)
     results = []
     for dist, chunk_idx in zip(distances[0], idxs[0]):
