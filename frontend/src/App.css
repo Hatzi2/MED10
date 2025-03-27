@@ -1,38 +1,119 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.app-container {
+  position: relative;
+  height: 100vh;
+  width: 100vw;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  background-color: white;
+}
+
+/* Logo Container */
+.logo-container {
+  position: relative;
+  z-index: 10; /* Ensure it stays on top */
+}
+
+/* Logo Size */
+.logo {
+  width: 240px; /* Adjust size */
+  height: auto;
+}
+
+
+/* Centered container */
+.content-container {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  width: 100%; /* Ensure content container fills available width */
 }
 
-.App-link {
-  color: #61dafb;
+/* Placeholder Box */
+.placeholder-box {
+  height: 200px;
+  width: 100%; /* Ensure the box stretches within its grid cell */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  background-color: #fafafa;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Text color inside placeholder */
+.placeholder-box .MuiTypography-root {
+  color: black; /* Set text color to black */
 }
+
+/* Grid Styling */
+.MuiGrid-item {
+  justify-content: center;
+  align-items: center;
+}
+
+/* New component box styling */
+.new-component-box {
+  height: 628px; /* 3 times the height of the other boxes */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 12px;
+  background-color: #fafafa; /* Slightly different background color */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
+  padding: 10px; /* Optional padding */
+}
+
+/* Slice Box inside the new component */
+.slice-box {
+  display: flex;
+  justify-content: space-between; /* Space the text and circles apart */
+  align-items: center;
+  height: 100%; /* Ensures it fills the grid item */
+  border-radius: 6px;
+  background-color: #ffffff;
+  position: relative; /* Required for absolute positioning of circles */
+  padding: 10px 20px; /* Add padding on both sides of the slice box */
+  box-sizing: border-box; /* Include padding in the total width/height calculation */
+  border: 2px solid #ffffff; /* Default border color */
+  transition: border-color 0.3s ease; /* Smooth transition for the border color */
+  cursor: pointer; /* Change the cursor to a hand when hovering */
+}
+
+/* Hover state for slice box */
+.slice-box:hover {
+  border-color: #cecdcd; /* Change the border color on hover (green in this case) */
+}
+
+/* Text color inside slice */
+.slice-box .MuiTypography-root {
+  color: black;
+  margin-right: 20px; /* Space between the text and the circles */
+  white-space: nowrap; /* Prevent text from wrapping to new lines */
+}
+
+/* Circle container to position circles absolutely */
+.circle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between the circles */
+  justify-content: flex-end; /* Ensure circles are aligned to the right */
+}
+
+/* Green circle styling */
+.green-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; /* Makes it a circle */
+  background-color: green;
+}
+
+/* Red circle styling */
+.red-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%; /* Makes it a circle */
+  background-color: red;
+}
+
