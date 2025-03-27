@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-route
 import { Container, Grid, Box, Typography, Dialog, DialogTitle, DialogContent, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, ThemeProvider } from "@mui/material";
 import theme from "./theme";
 import logo from "./assets/logo.png";
-import RevisionPage from "./RevisionPage"; // Import the new page
+import RevisionPage from "./RevisionPage";
 import "./App.css";
 
 const Home: React.FC = () => {
@@ -20,6 +20,19 @@ const Home: React.FC = () => {
   const handleAccept = () => {
     setCircleStates((prev) => prev.map((state, index) => (index === 5 ? true : state)));
     setOpen(false);
+  };
+
+  const handleDialogOpen = async () => {
+    try {
+      await fetch("http://localhost:5000/run-script", {
+        method: "POST",
+      });
+      console.log("Python script triggered");
+    } catch (error) {
+      console.error("Failed to trigger Python script:", error);
+    }
+
+    setOpen(true);
   };
 
   return (
@@ -50,7 +63,7 @@ const Home: React.FC = () => {
                   <Grid item key={index} style={{ flex: 1 }}>
                     <Box
                       className="slice-box"
-                      onClick={() => index === 5 && setOpen(true)}
+                      onClick={() => index === 5 && handleDialogOpen()}
                       style={{ cursor: index === 5 ? "pointer" : "default" }}
                     >
                       <Typography variant="h6">
