@@ -1,0 +1,68 @@
+/* Global reset to remove unwanted margins/padding */
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Prevent scrollbars */
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  /* Page container */
+  .revision-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100vw;
+    height: 100vh;
+    background-color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow: hidden; /* Prevent outer scrollbars */
+  }
+  
+  /* Table container - now fully responsive */
+  .revision-container .revision-table-container {
+    width: 90vw; /* Responsive width */
+    max-width: 800px; /* Limit width */
+    max-height: 70vh; /* Prevent it from taking full height */
+    overflow-y: auto; /* Enable scrolling inside table if needed */
+    background-color: #fafafa;
+    border-radius: 12px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+  }
+  
+  /* Table Layout */
+  .revision-table {
+    width: 100%;
+    table-layout: fixed;
+  }
+  
+  /* Prevent last column from stretching */
+  .revision-table th, .revision-table td {
+    text-align: center;
+    padding: 10px;
+  }
+  
+  /* Button Column */
+  button.table-action-button {
+    background-color: #FF8308;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .table-action-button:hover {
+    background-color: #aa5807;
+  }
+  
+  /* Back Button */
+  button.back-button {
+    margin: 20px;
+    width: 200px;
+    color: white;
+  }
+  
+  
