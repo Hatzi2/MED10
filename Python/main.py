@@ -187,6 +187,13 @@ def main():
         group_to_labels.setdefault(group, []).append(label)
 
     # 7) For each group, pick the best result based on the highest fuzzy score.
+    addresses = []
+    postal_codes = []
+    area_sizes = []
+
+    # Track iteration index
+    group_index = 0
+
     for group, labels in group_to_labels.items():
         best_overall = None
         best_config = None
@@ -215,8 +222,31 @@ def main():
             print(f"Fuzzy ratio: {score}/100")
             print(f"FAISS distance: {dist:.4f}")
             print(f"Chunk excerpt:\n{chunk_text[:200]}...\n")
+
+            result_data = {
+                "group": group,
+                "query": best_query,
+                "chunk_size": best_config[0],
+                "overlap": best_config[1],
+                "matched_substring": candidate,
+                "fuzzy_score": score,
+                "faiss_distance": dist,
+                "chunk_excerpt": chunk_text[:200]
+            }
+
+            # Save to appropriate list by order
+            if group_index == 0:
+                addresses.append(result_data)
+            elif group_index == 1:
+                postal_codes.append(result_data)
+            elif group_index == 2:
+                area_sizes.append(result_data)
         else:
             print(f"\nNo result for group '{group}'")
+
+        group_index += 1
+
+
 
 
 
