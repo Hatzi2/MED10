@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Ørnevej 45",
+        "received": "Ørnevei 45",
+        "confidence": "90.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "195",
+        "received": "195 m?.",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Svenstrup J 9230",
+        "received": "9230 Svenstrup J",
+        "confidence": "100.0%"
+    }
+]

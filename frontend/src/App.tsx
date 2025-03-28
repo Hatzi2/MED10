@@ -11,11 +11,12 @@ const Home: React.FC = () => {
   const [circleStates, setCircleStates] = useState<boolean[]>([true, true, true, true, true, false]);
   const navigate = useNavigate();
 
-  const rows = [
-    { id: "Adresse:", expected: "Urbansgade 26", received: "Urbansgade 26", confidence: "99%" },
-    { id: "Areal:", expected: "50m2", received: "50m2", confidence: "99%" },
-    { id: "By:", expected: "Aalborg", received: "Aalborg", confidence: "99%" },
-  ];
+  const [rows, setRows] = useState([
+    { id: "Adresse:", expected: "", received: "", confidence: "" },
+    { id: "Areal:", expected: "", received: "", confidence: "" },
+    { id: "By:", expected: "", received: "", confidence: "" },
+  ]);
+  
 
   const handleAccept = () => {
     setCircleStates((prev) => prev.map((state, index) => (index === 5 ? true : state)));
@@ -24,16 +25,26 @@ const Home: React.FC = () => {
 
   const handleDialogOpen = async () => {
     try {
-      await fetch("http://localhost:5000/run-script", {
+      const response = await fetch("http://localhost:5000/run-script", {
         method: "POST",
       });
-      console.log("Python script triggered");
+  
+      const data = await response.json();
+  
+      const updatedRows = rows.map((row) => {
+        const match = data.find((item: any) => item.id === row.id);
+        return match ? { ...row, ...match } : row;
+      });
+  
+      setRows(updatedRows);
+      console.log("Updated rows with fetched data:", updatedRows);
     } catch (error) {
       console.error("Failed to trigger Python script:", error);
     }
-
+  
     setOpen(true);
   };
+  
 
   return (
     <div className="app-container">

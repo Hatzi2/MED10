@@ -245,8 +245,31 @@ def main():
             print(f"\nNo result for group '{group}'")
 
         group_index += 1
+    
+    # 8)
+    output_data = [
+        {
+            "id": "Adresse:",
+            "expected": f"{street_name} {house_number}",
+            "received": addresses[0]["matched_substring"] if addresses else "",
+            "confidence": f'{addresses[0]["fuzzy_score"]}%' if addresses else ""
+        },
+        {
+            "id": "Areal:",
+            "expected": str(area_size),
+            "received": area_sizes[0]["matched_substring"] if area_sizes else "",
+            "confidence": f'{area_sizes[0]["fuzzy_score"]}%' if area_sizes else ""
+        },
+        {
+            "id": "By:",
+            "expected": f"{postal_district} {postal_code}",
+            "received": postal_codes[0]["matched_substring"] if postal_codes else "",
+            "confidence": f'{postal_codes[0]["fuzzy_score"]}%' if postal_codes else ""
+        }
+    ]
 
-
+    with open("Files/output_results.json", "w", encoding="utf-8") as outfile:
+        json.dump(output_data, outfile, ensure_ascii=False, indent=4)
 
 
 
