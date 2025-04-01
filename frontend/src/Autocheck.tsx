@@ -16,12 +16,15 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Button
+  Button,
+  CircularProgress,
+  Backdrop
 } from "@mui/material";
 import logo from "./assets/logo.png";
 
 const Home: React.FC = () => {
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [circleStates, setCircleStates] = useState<boolean[]>([true, true, true, true, true, false]);
   const [rows, setRows] = useState([
     { id: "Adresse:", expected: "", received: "", confidence: "" },
@@ -39,6 +42,7 @@ const Home: React.FC = () => {
   };
 
   const handleDialogOpen = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch("http://localhost:5000/run-script", {
         method: "POST",
@@ -60,11 +64,12 @@ const Home: React.FC = () => {
 
       setRows(updatedRows);
       console.log("Updated rows with fetched data:", updatedRows);
+      setOpen(true);
     } catch (error) {
       console.error("Failed to trigger Python script:", error);
+    } finally {
+      setIsLoading(false);
     }
-
-    setOpen(true);
   };
 
   return (
@@ -159,6 +164,10 @@ const Home: React.FC = () => {
           </Button>
         </DialogContent>
       </Dialog>
+
+      <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   );
 };
