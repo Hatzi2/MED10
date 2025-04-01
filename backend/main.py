@@ -137,7 +137,7 @@ def run_search_for_config(config, text, model, queries_to_run):
 
 
 def main():
-    json_dir = "Files/Ground truth"
+    json_dir = "Files/Ground-truth"
     text_dir = "Files/Policer"
     output_dir = "Files/Output"
     os.makedirs(output_dir, exist_ok=True)

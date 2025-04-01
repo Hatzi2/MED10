@@ -20,6 +20,16 @@ def run_script():
         return jsonify(data)
     else:
         return jsonify({"error": "Output file not found"}), 500
+    
+@app.route("/list-files", methods=["GET"])
+def list_files():
+    folder_path = "Files/policer-Raw"
+    if not os.path.exists(folder_path):
+        return jsonify({"error": "Folder not found"}), 404
+
+    file_list = os.listdir(folder_path)
+    return jsonify(file_list)
+
 
 if __name__ == "__main__":
     app.run(port=5000)
