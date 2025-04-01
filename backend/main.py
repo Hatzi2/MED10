@@ -59,7 +59,6 @@ def create_faiss_index(chunks, model, nlist=7):
     :param nlist: Number of clusters for IVF indexing (default: 100).
     :return: Trained FAISS index.
     """
-    # Encode text chunks into embeddings
     embeddings = model.encode(chunks, show_progress_bar=True)
     embeddings = np.array(embeddings, dtype='float32')
     
