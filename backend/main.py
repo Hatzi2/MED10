@@ -273,7 +273,7 @@ def main():
             }
         ]
 
-        output_path = os.path.join(output_dir, f"{filename}_results.json")
+        output_path = os.path.join(output_dir, f"{filename}.json")
         with open(output_path, "w", encoding="utf-8") as outfile:
             json.dump(output_data, outfile, ensure_ascii=False, indent=4)
 
