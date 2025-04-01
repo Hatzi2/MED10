@@ -2,8 +2,8 @@
     {
         "id": "Adresse:",
         "expected": "Ørnevej 45",
-        "received": "Ørnevei 45",
-        "confidence": "90.0%"
+        "received": "Ørnevej 45",
+        "confidence": "100.0%"
     },
     {
         "id": "Areal:",

@@ -42,9 +42,9 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     print(f"{pdf_path.name} - Processing Time: {elapsed_time:.2f} seconds")
 
 
-def process_all_pdfs(input_folder, output_folder, lang="dan", include_confidence=True):
-    input_folder = Path(input_folder)
-    output_folder = Path(output_folder)
+def process_all_pdfs(lang="dan", include_confidence=True):
+    input_folder = Path("Files/policer-Raw")
+    output_folder = Path("Files/Policer")
 
     for pdf_file in input_folder.glob("*.pdf"):
         output_text_file = output_folder / (pdf_file.stem + ".txt")
@@ -59,4 +59,4 @@ def process_all_pdfs(input_folder, output_folder, lang="dan", include_confidence
 input_folder = Path("Files/policer-Raw")
 output_folder = Path("Files/Policer")
 
-process_all_pdfs(input_folder, output_folder, lang="dan", include_confidence=True)
+process_all_pdfs(lang="dan", include_confidence=True)
