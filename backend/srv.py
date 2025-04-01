@@ -15,9 +15,11 @@ def run_script():
     if not filename:
         return jsonify({"error": "Filename not provided"}), 400
 
-    subprocess.run(["python", "backend\main.py", filename])
-
     output_path = f"Files/Output/{os.path.splitext(filename)[0]}.json"
+
+    if not os.path.exists(output_path):
+        subprocess.run(["python", "backend\main.py", filename])
+
     if os.path.exists(output_path):
         with open(output_path, "r", encoding="utf-8") as f:
             data = json.load(f)
