@@ -145,7 +145,7 @@ def main():
     for json_path in glob.glob(os.path.join(json_dir, "*.json")):
         filename = os.path.splitext(os.path.basename(json_path))[0]
         text_path = os.path.join(text_dir, f"{filename}.txt")
-        output_path = os.path.join(output_dir, f"{filename}_results.json")
+        output_path = os.path.join(output_dir, f"{filename}.json")
 
         # Skip if output already exists
         if os.path.exists(output_path):

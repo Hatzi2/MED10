@@ -9,17 +9,22 @@ CORS(app)
 
 @app.route("/run-script", methods=["POST"])
 def run_script():
-    # Run the script that creates output_results.json
-    subprocess.run(["python", "Python/main.py"])
+    data = request.get_json()
+    filename = data.get("filename")
 
-    # Load the JSON data and return it
-    output_path = "Files/output_results.json"
+    if not filename:
+        return jsonify({"error": "Filename not provided"}), 400
+
+    subprocess.run(["python", "backend\main.py", filename])
+
+    output_path = f"Files/Output/{os.path.splitext(filename)[0]}.json"
     if os.path.exists(output_path):
         with open(output_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         return jsonify(data)
     else:
         return jsonify({"error": "Output file not found"}), 500
+
     
 @app.route("/list-files", methods=["GET"])
 def list_files():

@@ -1,9 +1,21 @@
 // Autocheck.tsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
-  Container, Grid, Box, Typography, Dialog, DialogTitle, DialogContent,
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  Container,
+  Grid,
+  Box,
+  Typography,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Button
 } from "@mui/material";
 import logo from "./assets/logo.png";
@@ -11,13 +23,15 @@ import logo from "./assets/logo.png";
 const Home: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [circleStates, setCircleStates] = useState<boolean[]>([true, true, true, true, true, false]);
-  const navigate = useNavigate();
-
   const [rows, setRows] = useState([
     { id: "Adresse:", expected: "", received: "", confidence: "" },
     { id: "Areal:", expected: "", received: "", confidence: "" },
     { id: "By:", expected: "", received: "", confidence: "" },
   ]);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { filename } = location.state || {};
 
   const handleAccept = () => {
     setCircleStates(prev => prev.map((state, index) => index === 5 ? true : state));
@@ -26,8 +40,18 @@ const Home: React.FC = () => {
 
   const handleDialogOpen = async () => {
     try {
-      const response = await fetch("http://localhost:5000/run-script", { method: "POST" });
+      const response = await fetch("http://localhost:5000/run-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename }),
+      });
+
       const data = await response.json();
+
+      if (data.error) {
+        console.error("Backend error:", data.error);
+        return;
+      }
 
       const updatedRows = rows.map((row) => {
         const match = data.find((item: any) => item.id === row.id);
@@ -89,7 +113,7 @@ const Home: React.FC = () => {
       </Container>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Brandpolice</DialogTitle>
+        <DialogTitle>Brandpolice for: {filename}</DialogTitle>
         <DialogContent>
           <TableContainer component={Paper}>
             <Table>

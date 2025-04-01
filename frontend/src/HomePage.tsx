@@ -57,13 +57,13 @@ const HomePage: React.FC = () => {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{file}</TableCell>
                   <TableCell>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => navigate("/main")}
-                    >
-                      Gå til Autocheck
-                    </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate("/main", { state: { filename: file } })}
+                  >
+                    Gå til Autocheck
+                  </Button>
                   </TableCell>
                 </TableRow>
               ))}
