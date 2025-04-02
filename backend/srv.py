@@ -37,19 +37,35 @@ def list_files():
     file_list = os.listdir(folder_path)
     return jsonify(file_list)
 
-
 @app.route("/progress", methods=["GET"])
 def get_progress():
+    filename = request.args.get("filename")
+    if not filename:
+        return jsonify({
+            "ocr": {"progress": 0.0, "status": "Ikke startet"},
+            "main": {"progress": 0.0, "status": "Ikke startet"}
+        })
+
+    output_path = f"Files/Output/{os.path.splitext(filename)[0]}.json"
+    if os.path.exists(output_path):
+        return jsonify({
+            "ocr": {"progress": 1.0, "status": "Scanning Finitto"},
+            "main": {"progress": 1.0, "status": "finitto"}
+        })
+
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
     if not os.path.exists(progress_file):
-        return jsonify({"progress": 0.0, "status": "Idle"})
+        return jsonify({
+            "ocr": {"progress": 0.0, "status": "Ikke startet"},
+            "main": {"progress": 0.0, "status": "Ikke startet"}
+        })
+
     try:
         with open(progress_file, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return jsonify({
-                "progress": data.get("progress", 0.0),
-                "status": data.get("status", "")
-            })
+            ocr_progress = data.get("ocr", {"progress": 0.0, "status": ""})
+            main_progress = data.get("main", {"progress": 0.0, "status": ""})
+            return jsonify({"ocr": ocr_progress, "main": main_progress})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -59,7 +75,10 @@ def reset_progress():
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
     os.makedirs(os.path.dirname(progress_file), exist_ok=True)
     with open(progress_file, "w", encoding="utf-8") as f:
-        json.dump({"progress": 0.0, "status": "Starter..."}, f)
+        json.dump({
+            "ocr": {"progress": 0.0, "status": "Starter scanning..."},
+            "main": {"progress": 0.0, "status": "YEP"}
+        }, f)
     return jsonify({"status": "reset"}), 200
 
 

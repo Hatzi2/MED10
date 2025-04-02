@@ -1,5 +1,5 @@
 // Autocheck.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container,
@@ -25,8 +25,10 @@ import logo from "./assets/logo.png";
 const Home: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [progressValue, setProgressValue] = useState(0);
-    const [progressStatus, setProgressStatus] = useState("");
+    const [ocrProgress, setOcrProgress] = useState(0);
+    const [ocrStatus, setOcrStatus] = useState("");
+    const [mainProgress, setMainProgress] = useState(0);
+    const [mainStatus, setMainStatus] = useState("");
     const [circleStates, setCircleStates] = useState<boolean[]>([true, true, true, true, true, false]);
     const [rows, setRows] = useState([
         { id: "Adresse:", expected: "", received: "", confidence: "" },
@@ -45,21 +47,23 @@ const Home: React.FC = () => {
 
     const handleDialogOpen = async () => {
         setIsLoading(true);
-        setProgressValue(0);
-        setProgressStatus("Starting...");
+        setOcrProgress(0);
+        setMainProgress(0);
+        setOcrStatus("Starter...");
+        setMainStatus("Venter på scanning...");
 
-        // 🔧 Reset progress file BEFORE polling begins
-        await fetch("http://localhost:5000/reset-progress", {
-            method: "POST",
-        });
+        await fetch("http://localhost:5000/reset-progress", { method: "POST" });
 
         const pollProgress = async () => {
             try {
-                const res = await fetch("http://localhost:5000/progress");
+                const res = await fetch(`http://localhost:5000/progress?filename=${filename}`);
                 const data = await res.json();
-                setProgressValue(Math.round(data.progress * 100));
-                if (data.status) setProgressStatus(data.status);
-                if (data.progress < 1) {
+                setOcrProgress(Math.round((data.ocr?.progress || 0) * 100));
+                setOcrStatus(data.ocr?.status || "");
+                setMainProgress(Math.round((data.main?.progress || 0) * 100));
+                setMainStatus(data.main?.status || "");
+
+                if ((data.main?.progress || 0) < 1) {
                     setTimeout(pollProgress, 200);
                 }
             } catch (err) {
@@ -89,7 +93,6 @@ const Home: React.FC = () => {
             });
 
             setRows(updatedRows);
-            console.log("Updated rows with fetched data:", updatedRows);
             setOpen(true);
         } catch (error) {
             console.error("Failed to trigger Python script:", error);
@@ -191,27 +194,38 @@ const Home: React.FC = () => {
                 </DialogContent>
             </Dialog>
 
-            <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1, flexDirection: "column" }}>
-                <Box position="relative" display="inline-flex">
-                    <CircularProgress size={100} thickness={5} />
-                    <Box
-                        top={0}
-                        left={0}
-                        bottom={0}
-                        right={0}
-                        position="absolute"
-                        display="flex"
-                        alignItems="center"
-                        justifyContent="center"
-                    >
-                        <Typography variant="h6" component="div" sx={{ color: "#ffffff" }}>
-                            {`${progressValue}%`}
-                        </Typography>
-                    </Box>
+            <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                <Box display="flex" gap={8} alignItems="center">
+                    {[{ label: "OCR", value: ocrProgress, status: ocrStatus, color: ocrProgress === 100 ? "success.main" : "inherit" },
+                    { label: "Analyse", value: mainProgress, status: mainStatus, color: mainProgress === 100 ? "success.main" : "inherit" }].map(({ label, value, status, color }, index) => (
+                        <Box key={index} textAlign="center">
+                            <Box position="relative" display="inline-flex">
+                                <CircularProgress
+                                    variant="indeterminate"
+                                    size={100}
+                                    thickness={5}
+                                    sx={{ color: color }}
+                                />
+                                <Box
+                                    top={0}
+                                    left={0}
+                                    bottom={0}
+                                    right={0}
+                                    position="absolute"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                >
+                                    <Typography variant="h6" component="div" sx={{ color: "#ffffff" }}>
+                                        {`${value}%`}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                            <Typography variant="subtitle1" mt={2} sx={{ color: "#ffffff" }}>{label}</Typography>
+                            <Typography variant="body2" sx={{ color: "#cccccc" }}>{status}</Typography>
+                        </Box>
+                    ))}
                 </Box>
-                <Typography variant="subtitle1" mt={2} sx={{ color: "#ffffff" }}>
-                    {progressStatus}
-                </Typography>
             </Backdrop>
         </div>
     );

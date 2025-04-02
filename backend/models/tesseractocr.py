@@ -1,8 +1,10 @@
-from pdf2image import convert_from_path
+﻿from pdf2image import convert_from_path
 from pathlib import Path
 import pytesseract
 import numpy as np
+import json
 import time
+import os
 
 def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     images = convert_from_path(pdf_path)
@@ -11,6 +13,9 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
     output_folder.mkdir(parents=True, exist_ok=True)
     start_time = time.time()
+
+    total_pages = len(images)
+    progress_file = os.path.join("Files", "ProgressBar", "progress.json")
 
     for i, image in enumerate(images):
         if include_confidence:
@@ -27,7 +32,29 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
         extracted_text += f"\n--- Page {i + 1} ---\n{page_text}\n"
 
-    # Save using the PDF's name
+        # 🔁 Update progress JSON with OCR progress
+        ocr_progress = round((i + 1) / total_pages, 4)
+        ocr_status = f"Behandler side {i + 1} af {total_pages}"
+
+        # Preserve existing main progress if present
+        main_progress, main_status = 0.0, "Venter på scanning..."
+        if os.path.exists(progress_file):
+            try:
+                with open(progress_file, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    main_data = data.get("main", {})
+                    main_progress = main_data.get("progress", 0.0)
+                    main_status = main_data.get("status", "Venter på scanning...")
+            except Exception as e:
+                print("⚠️ Could not read existing main progress:", e)
+
+        with open(progress_file, "w", encoding="utf-8") as f:
+            json.dump({
+                "ocr": {"progress": ocr_progress, "status": ocr_status},
+                "main": {"progress": main_progress, "status": main_status}
+            }, f, ensure_ascii=False)
+
+    # Save text file
     text_filename = pdf_path.stem + ".txt"
     text_file_path = output_folder / text_filename
     with text_file_path.open("w", encoding="utf-8") as text_file:
@@ -40,6 +67,14 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
         print(f"\n{pdf_path.name} - Overall Average Confidence: {overall_avg_confidence:.2f}%")
 
     print(f"{pdf_path.name} - Processing Time: {elapsed_time:.2f} seconds")
+
+    # ✅ Final update: mark OCR complete
+    with open(progress_file, "w", encoding="utf-8") as f:
+        json.dump({
+            "ocr": {"progress": 1.0, "status": "Scanning færdig"},
+            "main": {"progress": main_progress, "status": main_status}
+        }, f, ensure_ascii=False)
+
 
 
 def process_all_pdfs(lang="dan", include_confidence=True):

@@ -101,11 +101,27 @@ def run_search_for_config(config, text, model, queries_to_run):
 
 
 def update_progress_json(progress_dir, pbar, status=""):
-    os.makedirs(progress_dir, exist_ok=True)
     progress_value = round(pbar.n / pbar.total, 4)
     progress_path = os.path.join(progress_dir, "progress.json")
+
+    # Load current OCR progress to preserve it
+    ocr_data = {"progress": 1.0, "status": "Scanning færdig"}  # Default fallback
+    if os.path.exists(progress_path):
+        try:
+            with open(progress_path, "r", encoding="utf-8") as f:
+                existing = json.load(f)
+                ocr_data = existing.get("ocr", ocr_data)
+        except Exception as e:
+            print("⚠️ Failed to load existing OCR progress:", e)
+
     with open(progress_path, "w", encoding="utf-8") as f:
-        json.dump({"progress": progress_value, "status": status}, f)
+        json.dump({
+            "ocr": ocr_data,
+            "main": {
+                "progress": progress_value,
+                "status": status
+            }
+        }, f, ensure_ascii=False)
 
 def main():
     json_dir = "Files/Ground-truth"
@@ -116,10 +132,12 @@ def main():
     os.makedirs(progressBar_dir, exist_ok=True)
     final_progress_path = os.path.join(progressBar_dir, "progress.json")
     with open(final_progress_path, "w", encoding="utf-8") as f:
-        json.dump({"progress": 0.0, "status": "Starting..."}, f)
+        json.dump({
+            "ocr": {"progress": 1.0, "status": "Scanning færdig"},
+            "main": {"progress": 0.0, "status": "Starting..."}
+        }, f, ensure_ascii=False)
 
     os.makedirs(output_dir, exist_ok=True)
-
     json_files = glob.glob(os.path.join(json_dir, "*.json"))
 
     for json_path in json_files:
@@ -254,6 +272,13 @@ def main():
                 json.dump(output_data, outfile, ensure_ascii=False, indent=4)
             pbar.update(1)
             update_progress("Gennemført")
+
+            # ✅ Force final progress to 100% for main
+            with open(os.path.join(progressBar_dir, "progress.json"), "r", encoding="utf-8") as f:
+                final_data = json.load(f)
+            final_data["main"] = {"progress": 1.0, "status": "Færdig"}
+            with open(os.path.join(progressBar_dir, "progress.json"), "w", encoding="utf-8") as f:
+                json.dump(final_data, f, ensure_ascii=False)
 
 
 
