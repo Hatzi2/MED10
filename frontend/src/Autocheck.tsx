@@ -1,5 +1,8 @@
 // Autocheck.tsx
+import CheckIcon from "@mui/icons-material/Check";
+
 import React, { useState, useEffect } from "react";
+
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Container,
@@ -195,38 +198,122 @@ const Home: React.FC = () => {
             </Dialog>
 
             <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <Box display="flex" gap={8} alignItems="center">
-                    {[{ label: "OCR", value: ocrProgress, status: ocrStatus, color: ocrProgress === 100 ? "success.main" : "inherit" },
-                    { label: "Analyse", value: mainProgress, status: mainStatus, color: mainProgress === 100 ? "success.main" : "inherit" }].map(({ label, value, status, color }, index) => (
-                        <Box key={index} textAlign="center">
-                            <Box position="relative" display="inline-flex">
-                                <CircularProgress
-                                    variant="indeterminate"
-                                    size={100}
-                                    thickness={5}
-                                    sx={{ color: color }}
-                                />
-                                <Box
-                                    top={0}
-                                    left={0}
-                                    bottom={0}
-                                    right={0}
-                                    position="absolute"
-                                    display="flex"
-                                    alignItems="center"
-                                    justifyContent="center"
-                                >
-                                    <Typography variant="h6" component="div" sx={{ color: "#ffffff" }}>
-                                        {`${value}%`}
-                                    </Typography>
+                <Box display="flex" alignItems="center" gap={6}>
+                    {[
+                        {
+                            label: "OCR",
+                            progress: ocrProgress,
+                            status: ocrStatus,
+                            type: "ocr"
+                        },
+                        {
+                            label: "Analyse",
+                            progress: mainProgress,
+                            status: mainStatus,
+                            type: "main"
+                        }
+                    ].map(({ label, progress, status, type }, index) => {
+                        const isComplete = progress === 100;
+
+                        // Determine whether to show determinate vs indeterminate
+                        const isDeterminate =
+                            (type === "ocr" && isComplete) ||
+                            (type === "main" && (ocrProgress < 100 || isComplete));
+
+                        const showPlaceholder = type === "main" && ocrProgress < 100 && progress === 0;
+
+                        return (
+                            <Box key={index} textAlign="center" width={150}>
+                                <Box position="relative" display="inline-flex">
+                                    {isComplete ? (
+                                        <Box
+                                            sx={{
+                                                width: 100,
+                                                height: 100,
+                                                borderRadius: "50%",
+                                                backgroundColor: "success.main",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center"
+                                            }}
+                                        >
+                                            <CheckIcon sx={{ color: "#fff", fontSize: 40 }} />
+                                        </Box>
+                                    ) : showPlaceholder ? (
+                                        <Box
+                                            sx={{
+                                                width: 100,
+                                                height: 100,
+                                                borderRadius: "50%",
+                                                border: "5px solid #ffffff33",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center"
+                                            }}
+                                        >
+                                            <Typography variant="h6" sx={{ color: "#ffffffaa" }}>0%</Typography>
+                                        </Box>
+                                    ) : isDeterminate ? (
+                                        <CircularProgress
+                                            variant="determinate"
+                                            value={progress}
+                                            size={100}
+                                            thickness={5}
+                                            sx={{ color: "inherit" }}
+                                        />
+                                    ) : (
+                                        <CircularProgress
+                                            variant="indeterminate"
+                                            size={100}
+                                            thickness={5}
+                                            sx={{ color: "inherit" }}
+                                        />
+                                    )}
+
+                                    {!isComplete && (
+                                        <Box
+                                            top={0}
+                                            left={0}
+                                            bottom={0}
+                                            right={0}
+                                            position="absolute"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                        >
+                                            <Typography variant="h6" sx={{ color: "#fff", minWidth: 40, textAlign: "center" }}>
+                                                {`${progress}%`}
+                                            </Typography>
+                                        </Box>
+                                    )}
                                 </Box>
+
+                                <Typography variant="subtitle1" mt={2} sx={{ color: "#fff", minHeight: 28 }}>
+                                    {label}
+                                </Typography>
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        color: "#ccc",
+                                        minHeight: 20,
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis"
+                                    }}
+                                >
+                                    {status}
+                                </Typography>
                             </Box>
-                            <Typography variant="subtitle1" mt={2} sx={{ color: "#ffffff" }}>{label}</Typography>
-                            <Typography variant="body2" sx={{ color: "#cccccc" }}>{status}</Typography>
-                        </Box>
-                    ))}
+                        );
+                    })}
                 </Box>
             </Backdrop>
+
+
+
+
+
+
         </div>
     );
 };
