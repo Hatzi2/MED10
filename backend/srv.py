@@ -42,11 +42,14 @@ def list_files():
 def get_progress():
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
     if not os.path.exists(progress_file):
-        return jsonify({"progress": 0.0})
+        return jsonify({"progress": 0.0, "status": "Idle"})
     try:
         with open(progress_file, "r", encoding="utf-8") as f:
             data = json.load(f)
-            return jsonify({"progress": data.get("progress", 0.0)})
+            return jsonify({
+                "progress": data.get("progress", 0.0),
+                "status": data.get("status", "")
+            })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -56,7 +59,7 @@ def reset_progress():
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
     os.makedirs(os.path.dirname(progress_file), exist_ok=True)
     with open(progress_file, "w", encoding="utf-8") as f:
-        json.dump({"progress": 0.0}, f)
+        json.dump({"progress": 0.0, "status": "Starter..."}, f)
     return jsonify({"status": "reset"}), 200
 
 

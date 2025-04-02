@@ -99,12 +99,13 @@ def run_search_for_config(config, text, model, queries_to_run):
         config_results[label] = (best_candidate, best_fuzzy_score, best_distance, best_chunk)
     return config, config_results
 
-def update_progress_json(progress_dir,  pbar):
+
+def update_progress_json(progress_dir, pbar, status=""):
     os.makedirs(progress_dir, exist_ok=True)
     progress_value = round(pbar.n / pbar.total, 4)
-    progress_path = os.path.join(progress_dir, f"progress.json")
+    progress_path = os.path.join(progress_dir, "progress.json")
     with open(progress_path, "w", encoding="utf-8") as f:
-        json.dump({"progress": progress_value}, f)
+        json.dump({"progress": progress_value, "status": status}, f)
 
 def main():
     json_dir = "Files/Ground-truth"
@@ -112,9 +113,10 @@ def main():
     output_dir = "Files/Output"
     progressBar_dir = "Files/ProgressBar"
 
+    os.makedirs(progressBar_dir, exist_ok=True)
     final_progress_path = os.path.join(progressBar_dir, "progress.json")
     with open(final_progress_path, "w", encoding="utf-8") as f:
-        json.dump({"progress": 0.0}, f)
+        json.dump({"progress": 0.0, "status": "Starting..."}, f)
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -125,32 +127,26 @@ def main():
         text_path = os.path.join(text_dir, f"{filename}.txt")
         output_path = os.path.join(output_dir, f"{filename}.json")
 
-        # 🔁 Reset progress to 0 at the start
-        os.makedirs(progressBar_dir, exist_ok=True)
-        initial_progress_path = os.path.join(progressBar_dir, "progress.json")
-        with open(initial_progress_path, "w", encoding="utf-8") as f:
-            json.dump({"progress": 0.0}, f)
-
         with tqdm(total=8, desc=f"Processing {filename}", ncols=100, dynamic_ncols=True) as pbar:
-            def update_progress():
-                update_progress_json(progressBar_dir, pbar)
+            def update_progress(status=""):
+                update_progress_json(progressBar_dir, pbar, status)
 
             if os.path.exists(output_path):
                 pbar.write(f"Output already exists for '{filename}', skipping.")
                 pbar.update(8)
-                update_progress()
+                update_progress("Completed (skipped)")
                 continue
 
             pbar.set_description("Step 1: Loading JSON")
             street_name, house_number, postal_code, postal_district, area_size = load_json(json_path)
             pbar.update(1)
-            update_progress()
+            update_progress("Loader Værdier")
 
             pbar.set_description("Step 2: Reading Text")
             with open(text_path, 'r', encoding='utf-8') as f:
                 text = f.read()
             pbar.update(1)
-            update_progress()
+            update_progress("Læser Tekst")
 
             pbar.set_description("Step 3: Building Search Queries")
             queries_to_run = []
@@ -175,7 +171,7 @@ def main():
                     queries_to_run.append((label_specific, query))
                     group_mapping[label_specific] = "area_size"
             pbar.update(1)
-            update_progress()
+            update_progress("Klargør søgning")
 
             pbar.set_description("Step 4-6: Running FAISS configs")
             config_results = {}
@@ -189,7 +185,7 @@ def main():
                     config_results[config] = results
                     pbar.write(f"  → Finished config: chunk_size={config[0]}, overlap={config[1]}")
                     pbar.update(1)
-                    update_progress()
+                    update_progress("Søger igennem Dokumentet")
 
             pbar.set_description("Step 7: Saving data")
             group_to_labels = {}
@@ -257,7 +253,7 @@ def main():
             with open(output_path, "w", encoding="utf-8") as outfile:
                 json.dump(output_data, outfile, ensure_ascii=False, indent=4)
             pbar.update(1)
-            update_progress()
+            update_progress("Gennemført")
 
 
 

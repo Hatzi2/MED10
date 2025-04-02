@@ -26,6 +26,7 @@ const Home: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [progressValue, setProgressValue] = useState(0);
+    const [progressStatus, setProgressStatus] = useState("");
     const [circleStates, setCircleStates] = useState<boolean[]>([true, true, true, true, true, false]);
     const [rows, setRows] = useState([
         { id: "Adresse:", expected: "", received: "", confidence: "" },
@@ -45,6 +46,7 @@ const Home: React.FC = () => {
     const handleDialogOpen = async () => {
         setIsLoading(true);
         setProgressValue(0);
+        setProgressStatus("Starting...");
 
         // 🔧 Reset progress file BEFORE polling begins
         await fetch("http://localhost:5000/reset-progress", {
@@ -56,6 +58,7 @@ const Home: React.FC = () => {
                 const res = await fetch("http://localhost:5000/progress");
                 const data = await res.json();
                 setProgressValue(Math.round(data.progress * 100));
+                if (data.status) setProgressStatus(data.status);
                 if (data.progress < 1) {
                     setTimeout(pollProgress, 200);
                 }
@@ -206,6 +209,9 @@ const Home: React.FC = () => {
                         </Typography>
                     </Box>
                 </Box>
+                <Typography variant="subtitle1" mt={2} sx={{ color: "#ffffff" }}>
+                    {progressStatus}
+                </Typography>
             </Backdrop>
         </div>
     );
