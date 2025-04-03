@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import logo from "./assets/logo.png";
 import {
-  Container,
   Table,
   TableBody,
   TableCell,
@@ -9,10 +9,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Typography,
   Button,
   CircularProgress,
 } from "@mui/material";
+import "./HomePage.css";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
@@ -35,20 +35,21 @@ const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <Container maxWidth="md" style={{ marginTop: "2rem" }}>
-      <Typography variant="h4" gutterBottom>
-        Home Page Table
-      </Typography>
+    <div className="home-container">
+      <div className="logo-container">
+        <img src={logo} alt="Logo" className="logo" />
+      </div>
+
       {loading ? (
         <CircularProgress />
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer component={Paper} className="home-table-container">
+          <Table className="home-table">
             <TableHead>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Filename</TableCell>
-                <TableCell></TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Filnavn</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -57,13 +58,15 @@ const HomePage: React.FC = () => {
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{file}</TableCell>
                   <TableCell>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate("/main", { state: { filename: file } })}
-                  >
-                    Gå til Autocheck
-                  </Button>
+                    <Button
+                      variant="contained"
+                      className="table-action-button"
+                      onClick={() =>
+                        navigate("/main", { state: { filename: file } })
+                      }
+                    >
+                      Gå til Autocheck
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -71,7 +74,7 @@ const HomePage: React.FC = () => {
           </Table>
         </TableContainer>
       )}
-    </Container>
+    </div>
   );
 };
 

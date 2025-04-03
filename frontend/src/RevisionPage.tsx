@@ -1,6 +1,7 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import logo from "./assets/logo.png";
 import "./RevisionPage.css"; // Ensure CSS file is applied
 
 const RevisionPage: React.FC = () => {
@@ -18,9 +19,9 @@ const RevisionPage: React.FC = () => {
 
   return (
     <div className="revision-container">
-      <Typography variant="h4" gutterBottom>
-        Revision Page
-      </Typography>
+      <div className="logo-container">
+  <img src={logo} alt="Logo" className="logo" />
+</div>
 
       <TableContainer component={Paper} className="revision-table-container">
   <Table className="revision-table">
