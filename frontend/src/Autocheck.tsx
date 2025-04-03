@@ -176,12 +176,12 @@ const Home: React.FC = () => {
                     </TableContainer>
 
                     <Button
-                        onClick={() => navigate("/revision")}
+                        onClick={() => navigate("/revision", { state: { filename, rows } })}
                         fullWidth
                         variant="contained"
                         color="primary"
                         sx={{ marginTop: "10px", color: "white" }}
-                    >
+                        >
                         Revidér
                     </Button>
 
