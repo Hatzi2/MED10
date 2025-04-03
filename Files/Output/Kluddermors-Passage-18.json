@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Kluddermors Passage 18",
+        "received": "Kluddermors Passage 18",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "152",
+        "received": "152 m2",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Fnurreslev 5555",
+        "received": "5555 Fnurreslev",
+        "confidence": "100.0%"
+    }
+]

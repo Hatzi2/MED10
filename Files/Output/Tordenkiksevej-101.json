@@ -1,20 +1,20 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Ørnevej 45",
-        "received": "Ørnevej 45",
+        "expected": "Tordenkiksevej 101",
+        "received": "Tordenkiksevej 101",
         "confidence": "100.0%"
     },
     {
         "id": "Areal:",
         "expected": "195",
-        "received": "195 m?.",
+        "received": "195 m?2.",
         "confidence": "100.0%"
     },
     {
         "id": "By:",
-        "expected": "Svenstrup J 9230",
-        "received": "9230 Svenstrup J",
+        "expected": "Smuldrum 7777",
+        "received": "7777 Smuldrum",
         "confidence": "100.0%"
     }
 ]

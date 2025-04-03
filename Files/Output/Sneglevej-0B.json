@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Sneglevej 0B",
+        "received": "Sneglevej OB",
+        "confidence": "91.66666666666666%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "70",
+        "received": "+ 7700",
+        "confidence": "66.66666666666667%"
+    },
+    {
+        "id": "By:",
+        "expected": "Langsomlund 4040",
+        "received": "4040 Langsomlund",
+        "confidence": "100.0%"
+    }
+]

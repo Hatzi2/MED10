@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Nullermandsvej 1",
+        "received": "Nullermandsvej 1",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "198",
+        "received": "m2 198",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Støvlested 3131",
+        "received": "3131 Støvlested",
+        "confidence": "100.0%"
+    }
+]
