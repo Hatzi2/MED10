@@ -7,19 +7,10 @@ import easyocr
 import numpy as np
 import time
 import cv2  # For image conversion if needed
-import torch  # Used to check GPU availability
 import json
 import csv
 
-def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True):
-    # Check for GPU availability
-    if use_gpu:
-        if torch.cuda.is_available():
-            print("CUDA GPU is available. Using GPU for OCR.")
-        else:
-            print("CUDA GPU is not available. Running on CPU.")
-            use_gpu = False  # Fallback to CPU
-
+def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     # Convert PDF pages to images
     images = convert_from_path(pdf_path)
     extracted_text = ""
@@ -31,8 +22,8 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, us
     # EasyOCR uses "da" for Danish language
     lang_code = "da" if lang.lower() in ["dan", "danish"] else lang
     
-    # Initialize the EasyOCR Reader with GPU parameter
-    reader = easyocr.Reader([lang_code], gpu=use_gpu)
+    # Initialize the EasyOCR Reader (GPU parameters removed)
+    reader = easyocr.Reader([lang_code])
     
     # Start the timer
     start_time = time.time()
@@ -82,7 +73,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, us
                 "main": {"progress": main_progress, "status": main_status}
             }, f, ensure_ascii=False)
 
-    # Save the extracted text to a file using the PDF file's stem as filename
+    # Save the extracted text to a file (using the PDF file's stem as filename)
     text_filename = pdf_path.stem + ".txt"
     text_file_path = output_folder / text_filename
     with text_file_path.open("w", encoding="utf-8") as text_file:
@@ -92,7 +83,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, us
 
     if include_confidence and confidence_scores:
         overall_avg_conf = np.mean(confidence_scores)
-        print(f"\nOverall Average Confidence Score: {overall_avg_conf:.2f}%")
+        print(f"\n{pdf_path.name} - Overall Average Confidence Score: {overall_avg_conf:.2f}%")
     else:
         overall_avg_conf = "N/A"
     
@@ -117,8 +108,18 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, us
         avg_conf = overall_avg_conf if isinstance(overall_avg_conf, float) else overall_avg_conf
         writer.writerow([pdf_path.name, f"{elapsed_time:.2f}", conf_per_page_str, f"{avg_conf:.2f}" if isinstance(avg_conf, float) else avg_conf])
 
+def process_all_pdfs(lang="dan", include_confidence=True):
+    input_folder = Path("Files/policer-Raw")
+    output_folder = Path("Files/Policer")
+
+    for pdf_file in input_folder.glob("*.pdf"):
+        output_text_file = output_folder / (pdf_file.stem + ".txt")
+        if output_text_file.exists():
+            print(f"Skipping {pdf_file.name} (already extracted)")
+        else:
+            print(f"\nProcessing {pdf_file.name}...")
+            pdf_to_text(pdf_file, output_folder, lang=lang, include_confidence=include_confidence)
+
 # Example usage:
 if __name__ == "__main__":
-    pdf_path = Path("Files/policer-Raw/Husforsikring - Ornevej 45.pdf")  # Replace with your PDF file path
-    output_folder = Path("Files/Policer")
-    pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True)
+    process_all_pdfs(lang="dan", include_confidence=True)
