@@ -198,135 +198,182 @@ const Home: React.FC = () => {
             </Dialog>
 
             <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <Box display="flex" alignItems="center" gap={6}>
+                <Box display="flex" gap={6} justifyContent="center">
                     {[
                         {
+                            // OCR circle configuration
                             label: "OCR",
                             progress: ocrProgress,
                             status: ocrStatus,
                             type: "ocr"
                         },
                         {
+                            // Analyse circle configuration
                             label: "Analyse",
                             progress: mainProgress,
                             status: mainStatus,
                             type: "main"
                         }
                     ].map(({ label, progress, status, type }, index) => {
+                        // Determine if the current circle is complete (progress equals 100)
                         const isComplete = progress === 100;
+                        // Fixed circle dimensions and text container height
+                        const circleHeight = 100;
+                        const textContainerHeight = 40;
 
-                        const isDeterminate =
-                            (type === "ocr" && isComplete) ||
-                            (type === "main" && (ocrProgress < 100 || isComplete));
+                        // Compute variant, value, and overlay text based on type and progress:
+                        let variant, computedValue, computedText;
 
-                        const showPlaceholder = type === "main" && ocrProgress < 100 && progress === 0;
+                        if (type === "ocr") {
+                            // OCR circle:
+                            if (ocrProgress < 100) {
+                                variant = "indeterminate"; // while not finished, show indeterminate
+                                computedText = `${ocrProgress}%`;
+                            } else {
+                                variant = "determinate"; // when finished, show determinate with value 100
+                                computedValue = ocrProgress; // 100
+                                computedText = `${ocrProgress}%`;
+                            }
+                        } else if (type === "main") {
+                            // Analyse circle:
+                            if (ocrProgress < 100) {
+                                // While OCR is running, force the circle to be fully drawn (100)
+                                // but overlay text shows "0%"
+                                variant = "determinate";
+                                computedValue = 100;
+                                computedText = "0%";
+                            } else {
+                                // Once OCR is finished:
+                                if (mainProgress < 100) {
+                                    variant = "indeterminate"; // show as indeterminate while analysis is running
+                                    computedText = `${mainProgress}%`;
+                                } else {
+                                    variant = "determinate"; // when analysis is finished, show determinate
+                                    computedValue = mainProgress; // 100
+                                    computedText = `${mainProgress}%`;
+                                }
+                            }
+                        }
 
                         return (
-                            <Box key={index} textAlign="center" width={150}>
-                                <Box position="relative" display="inline-flex" width={100} height={100}>
-                                    {/* Green fill when complete */}
-                                    {isComplete && (
-                                        <Fade in={true} timeout={400}>
-                                            <Box
+                            <Box key={index} width={150} position="relative" textAlign="center">
+                                {/* Absolutely positioned circle container at the top */}
+                                <Box
+                                    position="absolute"
+                                    top={0}
+                                    left="50%"
+                                    sx={{ transform: "translateX(-50%)" }}
+                                >
+                                    <Box position="relative" display="inline-flex" width={100} height={circleHeight}>
+                                        {/* Green overlay when complete */}
+                                        {isComplete && (
+                                            <Fade in timeout={400}>
+                                                <Box
+                                                    sx={{
+                                                        position: "absolute",
+                                                        top: 0,
+                                                        left: 0,
+                                                        width: "100%",
+                                                        height: "100%",
+                                                        borderRadius: "50%",
+                                                        backgroundColor: "success.main",
+                                                        zIndex: 1,
+                                                    }}
+                                                />
+                                            </Fade>
+                                        )}
+
+                                        {/* Render the CircularProgress based on variant */}
+                                        {variant === "indeterminate" ? (
+                                            <CircularProgress
+                                                variant="indeterminate"
+                                                size={100}
+                                                thickness={5}
                                                 sx={{
-                                                    position: "absolute",
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: "100%",
-                                                    height: "100%",
-                                                    borderRadius: "50%",
-                                                    backgroundColor: "success.main",
-                                                    zIndex: 1,
+                                                    width: 100,
+                                                    height: circleHeight,
+                                                    color: "inherit"
                                                 }}
                                             />
+                                        ) : (
+                                            <CircularProgress
+                                                variant="determinate"
+                                                value={computedValue}
+                                                size={100}
+                                                thickness={5}
+                                                sx={{
+                                                    width: 100,
+                                                    height: circleHeight,
+                                                    color: isComplete ? "transparent" : "inherit"
+                                                }}
+                                            />
+                                        )}
+
+                                        {/* Overlay percentage text */}
+                                        {!isComplete && (
+                                            <Box
+                                                top={0}
+                                                left={0}
+                                                bottom={0}
+                                                right={0}
+                                                position="absolute"
+                                                display="flex"
+                                                alignItems="center"
+                                                justifyContent="center"
+                                                zIndex={2}
+                                            >
+                                                <Typography variant="h6" sx={{ color: "#fff", minWidth: 40, textAlign: "center" }}>
+                                                    {`${computedText}`}
+                                                </Typography>
+                                            </Box>
+                                        )}
+
+                                        {/* Overlay check icon when complete */}
+                                        <Fade in={isComplete} timeout={400}>
+                                            <Box
+                                                top={0}
+                                                left={0}
+                                                bottom={0}
+                                                right={0}
+                                                position="absolute"
+                                                display="flex"
+                                                alignItems="center"
+                                                justifyContent="center"
+                                                zIndex={3}
+                                            >
+                                                <CheckIcon sx={{ color: "#fff", fontSize: 40 }} />
+                                            </Box>
                                         </Fade>
-                                    )}
-
-                                    {/* Circle logic */}
-                                    {showPlaceholder ? (
-                                        <Box
-                                            sx={{
-                                                width: 100,
-                                                height: 100,
-                                                borderRadius: "50%",
-                                                border: "5px solid #ffffff33",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center"
-                                            }}
-                                        >
-                                            <Typography variant="h6" sx={{ color: "#ffffffaa" }}>0%</Typography>
-                                        </Box>
-                                    ) : isDeterminate ? (
-                                        <CircularProgress
-                                            variant="determinate"
-                                            value={progress}
-                                            size={100}
-                                            thickness={5}
-                                            sx={{ color: isComplete ? "transparent" : "inherit" }}
-                                        />
-                                    ) : (
-                                        <CircularProgress
-                                            variant="indeterminate"
-                                            size={100}
-                                            thickness={5}
-                                            sx={{ color: "inherit" }}
-                                        />
-                                    )}
-
-                                    {/* Centered % while loading */}
-                                    {!isComplete && !showPlaceholder && (
-                                        <Box
-                                            top={0}
-                                            left={0}
-                                            bottom={0}
-                                            right={0}
-                                            position="absolute"
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                            zIndex={2}
-                                        >
-                                            <Typography variant="h6" sx={{ color: "#fff", minWidth: 40, textAlign: "center" }}>
-                                                {`${progress}%`}
-                                            </Typography>
-                                        </Box>
-                                    )}
-
-                                    {/* Centered check icon when complete */}
-                                    <Fade in={isComplete} timeout={400}>
-                                        <Box
-                                            top={0}
-                                            left={0}
-                                            bottom={0}
-                                            right={0}
-                                            position="absolute"
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="center"
-                                            zIndex={3}
-                                        >
-                                            <CheckIcon sx={{ color: "#fff", fontSize: 40 }} />
-                                        </Box>
-                                    </Fade>
+                                    </Box>
                                 </Box>
 
-                                {/* Labels */}
-                                <Typography variant="subtitle1" mt={2} sx={{ color: "#fff", minHeight: 28 }}>
-                                    {label}
-                                </Typography>
-                                <Typography
-                                    variant="body2"
+                                {/* Spacer to reserve fixed space for the circle */}
+                                <Box sx={{ height: circleHeight }} />
+
+                                {/* Fixed-height text container with overflow visible */}
+                                <Box
+                                    mt={2}
+                                    width="100%"
                                     sx={{
-                                        color: "#ccc",
-                                        minHeight: 20,
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis"
+                                        height: textContainerHeight,
+                                        overflow: "visible"
                                     }}
                                 >
-                                    {status}
-                                </Typography>
+                                    <Typography variant="subtitle1" sx={{ color: "#fff" }}>
+                                        {label}
+                                    </Typography>
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                            color: "#ccc",
+                                            whiteSpace: "normal",
+                                            overflow: "visible",
+                                            textOverflow: "unset"
+                                        }}
+                                    >
+                                        {status}
+                                    </Typography>
+                                </Box>
                             </Box>
                         );
                     })}
