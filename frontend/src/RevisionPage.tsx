@@ -33,7 +33,7 @@ const RevisionPage: React.FC = () => {
       </div>
 
       <div className="content-container">
-        <TableContainer component={Paper} className="revision-table-container">
+        <TableContainer component={Paper} className="revision-table-container" sx={{ backgroundColor: '#fafafa' }}>
           <div className="table-inner-padding">
             <Table className="revision-table">
               <TableHead>
