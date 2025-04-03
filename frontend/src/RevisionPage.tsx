@@ -1,4 +1,5 @@
 import React from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -9,22 +10,37 @@ import {
   Paper,
   Button,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
+// Define the type for each row
+interface RowData {
+  id: string;
+  expected: string;
+  received: string;
+  confidence: string;
+}
+
 const RevisionPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Extract filename and rows from the navigation state
+  const { filename, rows } = location.state || {};
 
-  const rows = [
-    { id: "Adresse:", expected: "Urbansgade 26", received: "Urbansgade 26", confidence: "99%" },
-    { id: "Areal:", expected: "50m2", received: "50m2", confidence: "99%" },
-    { id: "By:", expected: "Aalborg", received: "Aalborg", confidence: "99%" },
-  ];
+  // Use the passed rows if available, otherwise fallback to default values
+  const displayRows: RowData[] =
+    rows && rows.length > 0
+      ? rows
+      : [
+          { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
+          { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
+          { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
+        ];
 
-  const handleAction = (id: string) => {
-    console.log(`Action triggered for ${id}`);
-  };
+  // Construct the PDF URL using the provided filename
+  const pdfPath = filename
+    ? `http://localhost:5000/pdf/${filename}`
+    : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
 
   return (
     <div className="revision-container">
@@ -46,7 +62,7 @@ const RevisionPage: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows.map((row) => (
+                {displayRows.map((row: RowData) => (
                   <TableRow key={row.id}>
                     <TableCell sx={{ fontWeight: "bold" }}>{row.id}</TableCell>
                     <TableCell>{row.expected}</TableCell>
@@ -56,7 +72,7 @@ const RevisionPage: React.FC = () => {
                       <Button
                         variant="contained"
                         className="table-action-button"
-                        onClick={() => handleAction(row.id)}
+                        onClick={() => console.log(`Action triggered for ${row.id}`)}
                       >
                         Hop til
                       </Button>
@@ -70,15 +86,14 @@ const RevisionPage: React.FC = () => {
 
         <div className="pdf-preview-container">
           <object
-            title="Eksempel PDF"
+            title="Selected PDF"
             type="application/pdf"
-            data="https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf"
+            data={pdfPath}
+            width="100%"
+            height="600px"
           >
             Din browser understøtter ikke PDF preview.{" "}
-            <a
-              href="https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf"
-              download="sample.pdf"
-            >
+            <a href={pdfPath} download={filename || "file.pdf"}>
               Download PDF
             </a>
           </object>

@@ -1,11 +1,20 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask import send_from_directory
 import subprocess
 import json
 import os
 
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/pdf/<path:filename>')
+def serve_pdf(filename):
+    # Go one level up from the backend folder to reach the project root,
+    # then navigate to Files/policer-Raw.
+    pdf_dir = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
+    return send_from_directory(pdf_dir, filename)
+
 
 @app.route("/run-script", methods=["POST"])
 def run_script():
