@@ -183,11 +183,19 @@ def main():
 
             if area_size:
                 area_size_str = str(area_size).strip()
-                for suffix in ["m2", "m?", "kvm"]:
-                    label_specific = f"area_size_{suffix}"
-                    query = f"{area_size_str} {suffix}"
-                    queries_to_run.append((label_specific, query))
-                    group_mapping[label_specific] = "area_size"
+                for unit in ["m2", "m?", "kvm"]:
+                    # When the unit follows the number
+                    label_suffix = f"area_size_{unit}_suffix"
+                    query_suffix = f"{area_size_str} {unit}"
+                    queries_to_run.append((label_suffix, query_suffix))
+                    group_mapping[label_suffix] = "area_size"
+
+                    # When the unit precedes the number
+                    label_prefix = f"area_size_{unit}_prefix"
+                    query_prefix = f"{unit} {area_size_str}"
+                    queries_to_run.append((label_prefix, query_prefix))
+                    group_mapping[label_prefix] = "area_size"
+
             pbar.update(1)
             update_progress("Klargør søgning")
 
