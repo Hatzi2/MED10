@@ -1,6 +1,6 @@
 // Autocheck.tsx
 import CheckIcon from "@mui/icons-material/Check";
-
+import { Fade } from "@mui/material";
 import React, { useState, useEffect } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -215,7 +215,6 @@ const Home: React.FC = () => {
                     ].map(({ label, progress, status, type }, index) => {
                         const isComplete = progress === 100;
 
-                        // Determine whether to show determinate vs indeterminate
                         const isDeterminate =
                             (type === "ocr" && isComplete) ||
                             (type === "main" && (ocrProgress < 100 || isComplete));
@@ -224,22 +223,27 @@ const Home: React.FC = () => {
 
                         return (
                             <Box key={index} textAlign="center" width={150}>
-                                <Box position="relative" display="inline-flex">
-                                    {isComplete ? (
-                                        <Box
-                                            sx={{
-                                                width: 100,
-                                                height: 100,
-                                                borderRadius: "50%",
-                                                backgroundColor: "success.main",
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "center"
-                                            }}
-                                        >
-                                            <CheckIcon sx={{ color: "#fff", fontSize: 40 }} />
-                                        </Box>
-                                    ) : showPlaceholder ? (
+                                <Box position="relative" display="inline-flex" width={100} height={100}>
+                                    {/* Green fill when complete */}
+                                    {isComplete && (
+                                        <Fade in={true} timeout={400}>
+                                            <Box
+                                                sx={{
+                                                    position: "absolute",
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: "100%",
+                                                    height: "100%",
+                                                    borderRadius: "50%",
+                                                    backgroundColor: "success.main",
+                                                    zIndex: 1,
+                                                }}
+                                            />
+                                        </Fade>
+                                    )}
+
+                                    {/* Circle logic */}
+                                    {showPlaceholder ? (
                                         <Box
                                             sx={{
                                                 width: 100,
@@ -259,7 +263,7 @@ const Home: React.FC = () => {
                                             value={progress}
                                             size={100}
                                             thickness={5}
-                                            sx={{ color: "inherit" }}
+                                            sx={{ color: isComplete ? "transparent" : "inherit" }}
                                         />
                                     ) : (
                                         <CircularProgress
@@ -270,7 +274,8 @@ const Home: React.FC = () => {
                                         />
                                     )}
 
-                                    {!isComplete && (
+                                    {/* Centered % while loading */}
+                                    {!isComplete && !showPlaceholder && (
                                         <Box
                                             top={0}
                                             left={0}
@@ -280,14 +285,33 @@ const Home: React.FC = () => {
                                             display="flex"
                                             alignItems="center"
                                             justifyContent="center"
+                                            zIndex={2}
                                         >
                                             <Typography variant="h6" sx={{ color: "#fff", minWidth: 40, textAlign: "center" }}>
                                                 {`${progress}%`}
                                             </Typography>
                                         </Box>
                                     )}
+
+                                    {/* Centered check icon when complete */}
+                                    <Fade in={isComplete} timeout={400}>
+                                        <Box
+                                            top={0}
+                                            left={0}
+                                            bottom={0}
+                                            right={0}
+                                            position="absolute"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="center"
+                                            zIndex={3}
+                                        >
+                                            <CheckIcon sx={{ color: "#fff", fontSize: 40 }} />
+                                        </Box>
+                                    </Fade>
                                 </Box>
 
+                                {/* Labels */}
                                 <Typography variant="subtitle1" mt={2} sx={{ color: "#fff", minHeight: 28 }}>
                                     {label}
                                 </Typography>
@@ -308,10 +332,6 @@ const Home: React.FC = () => {
                     })}
                 </Box>
             </Backdrop>
-
-
-
-
 
 
         </div>
