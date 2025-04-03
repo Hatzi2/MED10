@@ -1,42 +1,69 @@
-﻿from pdf2image import convert_from_path
-from pathlib import Path
-import pytesseract
-import numpy as np
-import json
-import time
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+from pdf2image import convert_from_path
+from pathlib import Path
+import easyocr
+import numpy as np
+import time
+import cv2  # For image conversion if needed
+import torch  # Used to check GPU availability
+import json
 import csv
 
-def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
+def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True):
+    # Check for GPU availability
+    if use_gpu:
+        if torch.cuda.is_available():
+            print("CUDA GPU is available. Using GPU for OCR.")
+        else:
+            print("CUDA GPU is not available. Running on CPU.")
+            use_gpu = False  # Fallback to CPU
+
+    # Convert PDF pages to images
     images = convert_from_path(pdf_path)
     extracted_text = ""
-    confidence_scores = []
+    confidence_scores = []  # To store average confidence per page
 
+    # Ensure the output folder exists
     output_folder.mkdir(parents=True, exist_ok=True)
+    
+    # EasyOCR uses "da" for Danish language
+    lang_code = "da" if lang.lower() in ["dan", "danish"] else lang
+    
+    # Initialize the EasyOCR Reader with GPU parameter
+    reader = easyocr.Reader([lang_code], gpu=use_gpu)
+    
+    # Start the timer
     start_time = time.time()
-
     total_pages = len(images)
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
 
+    # Process each image (page)
     for i, image in enumerate(images):
+        # Convert PIL image to a NumPy array
+        image_np = np.array(image)
+        
         if include_confidence:
-            ocr_data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DATAFRAME)
-            valid_data = ocr_data[ocr_data.conf != -1]
-
-            avg_confidence = np.mean(valid_data.conf) if not valid_data.empty else 0
-            confidence_scores.append(avg_confidence)
-            print(f"Page {i + 1}: Confidence Score = {avg_confidence:.2f}%")
-
-            page_text = " ".join(valid_data.text.dropna())
+            results = reader.readtext(image_np, detail=1)
+            page_text = ""
+            page_confidences = []
+            for bbox, text, conf in results:
+                page_text += text + " "
+                page_confidences.append(conf * 100)  # Convert to percentage
+            avg_conf = np.mean(page_confidences) if page_confidences else 0
+            confidence_scores.append(avg_conf)
+            print(f"Page {i + 1}: Confidence Score = {avg_conf:.2f}%")
         else:
-            page_text = pytesseract.image_to_string(image, lang=lang)
-
+            results = reader.readtext(image_np, detail=0)
+            page_text = " ".join(results)
+        
         extracted_text += f"\n--- Page {i + 1} ---\n{page_text}\n"
-
+        
         # 🔁 Update progress JSON with OCR progress
         ocr_progress = round((i + 1) / total_pages, 4)
         ocr_status = f"Behandler side {i + 1} af {total_pages}"
-
+        
         # Preserve existing main progress if present
         main_progress, main_status = 0.0, "Venter på scanning..."
         if os.path.exists(progress_file):
@@ -48,29 +75,29 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
                     main_status = main_data.get("status", "Venter på scanning...")
             except Exception as e:
                 print("⚠️ Could not read existing main progress:", e)
-
+        
         with open(progress_file, "w", encoding="utf-8") as f:
             json.dump({
                 "ocr": {"progress": ocr_progress, "status": ocr_status},
                 "main": {"progress": main_progress, "status": main_status}
             }, f, ensure_ascii=False)
 
-    # Save text file using the PDF file's stem as filename
+    # Save the extracted text to a file using the PDF file's stem as filename
     text_filename = pdf_path.stem + ".txt"
     text_file_path = output_folder / text_filename
     with text_file_path.open("w", encoding="utf-8") as text_file:
         text_file.write(extracted_text)
-
+    
     elapsed_time = time.time() - start_time
 
     if include_confidence and confidence_scores:
-        overall_avg_confidence = np.mean(confidence_scores)
-        print(f"\n{pdf_path.name} - Overall Average Confidence: {overall_avg_confidence:.2f}%")
+        overall_avg_conf = np.mean(confidence_scores)
+        print(f"\nOverall Average Confidence Score: {overall_avg_conf:.2f}%")
     else:
-        overall_avg_confidence = "N/A"
-
+        overall_avg_conf = "N/A"
+    
     print(f"{pdf_path.name} - Processing Time: {elapsed_time:.2f} seconds")
-
+    
     # ✅ Final update: mark OCR complete
     with open(progress_file, "w", encoding="utf-8") as f:
         json.dump({
@@ -79,7 +106,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
         }, f, ensure_ascii=False)
 
     # --- Testing log: Save results to CSV ---
-    results_file = Path("Files/tesseractocr_results.csv")
+    results_file = Path("Files/easyocr_results.csv")
     results_file.parent.mkdir(parents=True, exist_ok=True)
     write_header = not results_file.exists()
     with results_file.open("a", newline='', encoding="utf-8") as csvfile:
@@ -87,23 +114,11 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
         if write_header:
             writer.writerow(["pdf_name", "total_time", "confidence_per_page", "average_confidence"])
         conf_per_page_str = ",".join([f"{conf:.2f}" for conf in confidence_scores]) if confidence_scores else ""
-        avg_conf = overall_avg_confidence if isinstance(overall_avg_confidence, float) else overall_avg_confidence
+        avg_conf = overall_avg_conf if isinstance(overall_avg_conf, float) else overall_avg_conf
         writer.writerow([pdf_path.name, f"{elapsed_time:.2f}", conf_per_page_str, f"{avg_conf:.2f}" if isinstance(avg_conf, float) else avg_conf])
 
-def process_all_pdfs(lang="dan", include_confidence=True):
-    input_folder = Path("Files/policer-Raw")
-    output_folder = Path("Files/Policer")
-
-    for pdf_file in input_folder.glob("*.pdf"):
-        output_text_file = output_folder / (pdf_file.stem + ".txt")
-        if output_text_file.exists():
-            print(f"Skipping {pdf_file.name} (already extracted)")
-        else:
-            print(f"\nProcessing {pdf_file.name}...")
-            pdf_to_text(pdf_file, output_folder, lang=lang, include_confidence=include_confidence)
-
 # Example usage:
-input_folder = Path("Files/policer-Raw")
-output_folder = Path("Files/Policer")
-
-process_all_pdfs(lang="dan", include_confidence=True)
+if __name__ == "__main__":
+    pdf_path = Path("Files/policer-Raw/Husforsikring - Ornevej 45.pdf")  # Replace with your PDF file path
+    output_folder = Path("Files/Policer")
+    pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True, use_gpu=True)
