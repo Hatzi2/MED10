@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Hikkehøj 6C",
+        "received": "Hikkehøj 6C,",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "152",
+        "received": "152 m2",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Uroligt 2424",
+        "received": "2424 Uroligt",
+        "confidence": "100.0%"
+    }
+]
