@@ -7,9 +7,9 @@
     },
     {
         "id": "Areal:",
-        "expected": "70",
-        "received": "03 42",
-        "confidence": "60.0%"
+        "expected": "78",
+        "received": "82 +",
+        "confidence": "57.14285714285714%"
     },
     {
         "id": "By:",

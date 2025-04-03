@@ -1,9 +1,9 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Krøllebakken 99",
-        "received": "Krøllebakken 99",
-        "confidence": "100.0%"
+        "expected": "Krøiiebakken 99",
+        "received": "Krøllebakken 99,",
+        "confidence": "86.66666666666667%"
     },
     {
         "id": "Areal:",

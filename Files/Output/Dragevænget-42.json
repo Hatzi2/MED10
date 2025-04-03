@@ -1,9 +1,9 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Dragevænget 42",
+        "expected": "Drågevanget 42",
         "received": "Dragevænget 42",
-        "confidence": "100.0%"
+        "confidence": "85.71428571428572%"
     },
     {
         "id": "Areal:",

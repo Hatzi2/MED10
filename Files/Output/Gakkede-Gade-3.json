@@ -7,9 +7,9 @@
     },
     {
         "id": "Areal:",
-        "expected": "162",
+        "expected": "182",
         "received": "162 kvm",
-        "confidence": "100.0%"
+        "confidence": "85.71428571428572%"
     },
     {
         "id": "By:",
