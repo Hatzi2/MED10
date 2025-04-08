@@ -1,6 +1,6 @@
-// Autocheck.tsx
 import CheckIcon from "@mui/icons-material/Check";
-import { Fade } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import { Fade, Tooltip } from "@mui/material";
 import React, { useState } from "react";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -157,9 +157,24 @@ const Home: React.FC = () => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell></TableCell>
-                                    <TableCell>Forventet:</TableCell>
-                                    <TableCell>Modtaget:</TableCell>
-                                    <TableCell>Sikkerhed:</TableCell>
+                                    <TableCell>
+                                        Forventet:
+                                        <Tooltip title="Den værdi vi forventer at se ifølge vores data">
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell>
+                                        Modtaget:
+                                        <Tooltip title="Den værdi fundet i dokumentet">
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                                        </Tooltip>
+                                    </TableCell>
+                                    <TableCell>
+                                        Sikkerhed:
+                                        <Tooltip title="Hvor sikker modellen er på matchet (%)">
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                                        </Tooltip>
+                                    </TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -181,7 +196,7 @@ const Home: React.FC = () => {
                         variant="contained"
                         color="primary"
                         sx={{ marginTop: "10px", color: "white" }}
-                        >
+                    >
                         Revidér
                     </Button>
 
@@ -199,57 +214,38 @@ const Home: React.FC = () => {
 
             <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Box display="flex" gap={6} justifyContent="center">
-                    {[
-                        {
-                            // OCR circle configuration
-                            label: "OCR",
-                            progress: ocrProgress,
-                            status: ocrStatus,
-                            type: "ocr"
-                        },
-                        {
-                            // Analyse circle configuration
-                            label: "Analyse",
-                            progress: mainProgress,
-                            status: mainStatus,
-                            type: "main"
-                        }
-                    ].map(({ label, progress, status, type }, index) => {
-                        // Determine if the current circle is complete (progress equals 100)
+                    {[{
+                        label: "OCR", progress: ocrProgress, status: ocrStatus, type: "ocr"
+                    }, {
+                        label: "Analyse", progress: mainProgress, status: mainStatus, type: "main"
+                    }].map(({ label, progress, status, type }, index) => {
                         const isComplete = progress === 100;
-                        // Fixed circle dimensions and text container height
                         const circleHeight = 100;
                         const textContainerHeight = 40;
 
-                        // Compute variant, value, and overlay text based on type and progress:
                         let variant, computedValue, computedText;
 
                         if (type === "ocr") {
-                            // OCR circle:
                             if (ocrProgress < 100) {
-                                variant = "indeterminate"; // while not finished, show indeterminate
+                                variant = "indeterminate";
                                 computedText = `${ocrProgress}%`;
                             } else {
-                                variant = "determinate"; // when finished, show determinate with value 100
-                                computedValue = ocrProgress; // 100
+                                variant = "determinate";
+                                computedValue = ocrProgress;
                                 computedText = `${ocrProgress}%`;
                             }
-                        } else if (type === "main") {
-                            // Analyse circle:
+                        } else {
                             if (ocrProgress < 100) {
-                                // While OCR is running, force the circle to be fully drawn (100)
-                                // but overlay text shows "0%"
                                 variant = "determinate";
                                 computedValue = 100;
                                 computedText = "0%";
                             } else {
-                                // Once OCR is finished:
                                 if (mainProgress < 100) {
-                                    variant = "indeterminate"; // show as indeterminate while analysis is running
+                                    variant = "indeterminate";
                                     computedText = `${mainProgress}%`;
                                 } else {
-                                    variant = "determinate"; // when analysis is finished, show determinate
-                                    computedValue = mainProgress; // 100
+                                    variant = "determinate";
+                                    computedValue = mainProgress;
                                     computedText = `${mainProgress}%`;
                                 }
                             }
@@ -257,15 +253,8 @@ const Home: React.FC = () => {
 
                         return (
                             <Box key={index} width={150} position="relative" textAlign="center">
-                                {/* Absolutely positioned circle container at the top */}
-                                <Box
-                                    position="absolute"
-                                    top={0}
-                                    left="50%"
-                                    sx={{ transform: "translateX(-50%)" }}
-                                >
+                                <Box position="absolute" top={0} left="50%" sx={{ transform: "translateX(-50%)" }}>
                                     <Box position="relative" display="inline-flex" width={100} height={circleHeight}>
-                                        {/* Green overlay when complete */}
                                         {isComplete && (
                                             <Fade in timeout={400}>
                                                 <Box
@@ -283,17 +272,12 @@ const Home: React.FC = () => {
                                             </Fade>
                                         )}
 
-                                        {/* Render the CircularProgress based on variant */}
                                         {variant === "indeterminate" ? (
                                             <CircularProgress
                                                 variant="indeterminate"
                                                 size={100}
                                                 thickness={5}
-                                                sx={{
-                                                    width: 100,
-                                                    height: circleHeight,
-                                                    color: "inherit"
-                                                }}
+                                                sx={{ width: 100, height: circleHeight, color: "inherit" }}
                                             />
                                         ) : (
                                             <CircularProgress
@@ -301,15 +285,10 @@ const Home: React.FC = () => {
                                                 value={computedValue}
                                                 size={100}
                                                 thickness={5}
-                                                sx={{
-                                                    width: 100,
-                                                    height: circleHeight,
-                                                    color: isComplete ? "transparent" : "inherit"
-                                                }}
+                                                sx={{ width: 100, height: circleHeight, color: isComplete ? "transparent" : "inherit" }}
                                             />
                                         )}
 
-                                        {/* Overlay percentage text */}
                                         {!isComplete && (
                                             <Box
                                                 top={0}
@@ -328,7 +307,6 @@ const Home: React.FC = () => {
                                             </Box>
                                         )}
 
-                                        {/* Overlay check icon when complete */}
                                         <Fade in={isComplete} timeout={400}>
                                             <Box
                                                 top={0}
@@ -347,30 +325,11 @@ const Home: React.FC = () => {
                                     </Box>
                                 </Box>
 
-                                {/* Spacer to reserve fixed space for the circle */}
                                 <Box sx={{ height: circleHeight }} />
 
-                                {/* Fixed-height text container with overflow visible */}
-                                <Box
-                                    mt={2}
-                                    width="100%"
-                                    sx={{
-                                        height: textContainerHeight,
-                                        overflow: "visible"
-                                    }}
-                                >
-                                    <Typography variant="subtitle1" sx={{ color: "#fff" }}>
-                                        {label}
-                                    </Typography>
-                                    <Typography
-                                        variant="body2"
-                                        sx={{
-                                            color: "#ccc",
-                                            whiteSpace: "normal",
-                                            overflow: "visible",
-                                            textOverflow: "unset"
-                                        }}
-                                    >
+                                <Box mt={2} width="100%" sx={{ height: textContainerHeight, overflow: "visible" }}>
+                                    <Typography variant="subtitle1" sx={{ color: "#fff" }}>{label}</Typography>
+                                    <Typography variant="body2" sx={{ color: "#ccc", whiteSpace: "normal", overflow: "visible", textOverflow: "unset" }}>
                                         {status}
                                     </Typography>
                                 </Box>
@@ -379,8 +338,6 @@ const Home: React.FC = () => {
                     })}
                 </Box>
             </Backdrop>
-
-
         </div>
     );
 };

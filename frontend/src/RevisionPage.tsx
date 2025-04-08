@@ -9,7 +9,9 @@ import {
   TableRow,
   Paper,
   Button,
+  Tooltip
 } from "@mui/material";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
@@ -24,10 +26,8 @@ interface RowData {
 const RevisionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Extract filename and rows from the navigation state
   const { filename, rows } = location.state || {};
 
-  // Use the passed rows if available, otherwise fallback to default values
   const displayRows: RowData[] =
     rows && rows.length > 0
       ? rows
@@ -37,7 +37,6 @@ const RevisionPage: React.FC = () => {
           { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
         ];
 
-  // Construct the PDF URL using the provided filename
   const pdfPath = filename
     ? `http://localhost:5000/pdf/${filename}`
     : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
@@ -55,9 +54,24 @@ const RevisionPage: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: "bold" }}></TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Forventet:</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Modtaget:</TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Sikkerhed:</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Forventet:
+                    <Tooltip title="Den værdi vi forventer at se ifølge vores data">
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Modtaget:
+                    <Tooltip title="Den værdi fundet i dokumentet">
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                    </Tooltip>
+                  </TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Sikkerhed:
+                    <Tooltip title="Hvor sikker modellen er på matchet (%)">
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                    </Tooltip>
+                  </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Handling</TableCell>
                 </TableRow>
               </TableHead>
