@@ -32,7 +32,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
         extracted_text += f"\n--- Page {i + 1} ---\n{page_text}\n"
 
-        # 🔁 Update progress JSON with OCR progress
+        # Update progress JSON with OCR progress
         ocr_progress = round((i + 1) / total_pages, 4)
         ocr_status = f"Behandler side {i + 1} af {total_pages}"
 
@@ -68,7 +68,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
     print(f"{pdf_path.name} - Processing Time: {elapsed_time:.2f} seconds")
 
-    # ✅ Final update: mark OCR complete
+    # Mark OCR complete
     with open(progress_file, "w", encoding="utf-8") as f:
         json.dump({
             "ocr": {"progress": 1.0, "status": "Scanning færdig"},
@@ -90,7 +90,7 @@ def process_all_pdfs(lang="dan", include_confidence=True):
             pdf_to_text(pdf_file, output_folder, lang=lang, include_confidence=include_confidence)
 
 
-# Example usage:
+# File paths:
 input_folder = Path("Files/policer-Raw")
 output_folder = Path("Files/Policer")
 
