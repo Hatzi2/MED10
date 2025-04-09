@@ -61,6 +61,15 @@ To set up Python packages for your environment, follow these steps:
      pip install -r requirements.txt
      ```
 
+
+## Installing NODE JS
+
+[Download Node Version Manager] NVM Setup.Exe (https://github.com/coreybutler/nvm-windows/releases)
+Open CMD and run the following commands: nvm install 20.11.1 -> nvm use 20.11.1 -> Verify: node -v -> You should see something like: "v20.11.1"
+
+## Det herunder er supposedly ikke nødvendigt, bare npm install
+In the frontend directory run the following commands in a cmd -> npm install pdfjs-dist@3.0.279 -> npm install @react-pdf-viewer/core@3.12.0 @react-pdf-viewer/default-layout@3.12.0
+Dinally -> npm install @react-pdf-viewer/search
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
