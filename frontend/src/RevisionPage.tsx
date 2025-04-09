@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     Table,
@@ -15,12 +15,10 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
-// PDF Viewer
 import { Viewer, Worker } from "@react-pdf-viewer/core";
 import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { searchPlugin } from "@react-pdf-viewer/search";
 
-// PDF Styles
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "@react-pdf-viewer/search/lib/styles/index.css";
@@ -41,33 +39,17 @@ const RevisionPage: React.FC = () => {
         rows && rows.length > 0
             ? rows
             : [
-                {
-                    id: "Adresse:",
-                    expected: "N/A",
-                    received: "N/A",
-                    confidence: "N/A",
-                },
-                {
-                    id: "Areal:",
-                    expected: "N/A",
-                    received: "N/A",
-                    confidence: "N/A",
-                },
-                {
-                    id: "By:",
-                    expected: "N/A",
-                    received: "N/A",
-                    confidence: "N/A",
-                },
+                { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
+                { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
+                { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
             ];
 
     const pdfPath = filename
         ? `http://localhost:5000/pdf/${filename}`
         : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
 
-    // Set up PDF viewer plugins
     const searchPluginInstance = searchPlugin();
-    const { highlight, jumpToNextMatch } = searchPluginInstance;
+    const { highlight, jumpToNextMatch, clearHighlights } = searchPluginInstance;
 
     const defaultLayoutPluginInstance = defaultLayoutPlugin({
         toolbarPlugin: {
@@ -75,8 +57,18 @@ const RevisionPage: React.FC = () => {
         },
     });
 
-    const handleSearch = (value: string) => {
-        if (value && value !== "N/A") {
+    const [activeRowId, setActiveRowId] = useState<string | null>(null);
+    const [lastSearchTerm, setLastSearchTerm] = useState<string | null>(null);
+
+    const handleSearchClick = (rowId: string, value: string) => {
+        if (!value || value === "N/A") return;
+
+        if (activeRowId === rowId) {
+            jumpToNextMatch();
+        } else {
+            clearHighlights();
+            setActiveRowId(rowId);
+            setLastSearchTerm(value);
             highlight(value);
             jumpToNextMatch();
         }
@@ -104,11 +96,7 @@ const RevisionPage: React.FC = () => {
                                         <Tooltip title="Den værdi vi forventer at se ifølge vores data">
                                             <HelpOutlineIcon
                                                 fontSize="small"
-                                                sx={{
-                                                    ml: 0.5,
-                                                    verticalAlign: "middle",
-                                                    color: "gray",
-                                                }}
+                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
                                             />
                                         </Tooltip>
                                     </TableCell>
@@ -117,11 +105,7 @@ const RevisionPage: React.FC = () => {
                                         <Tooltip title="Den værdi fundet i dokumentet">
                                             <HelpOutlineIcon
                                                 fontSize="small"
-                                                sx={{
-                                                    ml: 0.5,
-                                                    verticalAlign: "middle",
-                                                    color: "gray",
-                                                }}
+                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
                                             />
                                         </Tooltip>
                                     </TableCell>
@@ -130,11 +114,7 @@ const RevisionPage: React.FC = () => {
                                         <Tooltip title="Hvor sikker modellen er på matchet (%)">
                                             <HelpOutlineIcon
                                                 fontSize="small"
-                                                sx={{
-                                                    ml: 0.5,
-                                                    verticalAlign: "middle",
-                                                    color: "gray",
-                                                }}
+                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
                                             />
                                         </Tooltip>
                                     </TableCell>
@@ -142,23 +122,45 @@ const RevisionPage: React.FC = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {displayRows.map((row: RowData) => (
-                                    <TableRow key={row.id}>
-                                        <TableCell sx={{ fontWeight: "bold" }}>{row.id}</TableCell>
-                                        <TableCell>{row.expected}</TableCell>
-                                        <TableCell>{row.received}</TableCell>
-                                        <TableCell>{row.confidence}</TableCell>
-                                        <TableCell>
-                                            <Button
-                                                variant="contained"
-                                                className="table-action-button"
-                                                onClick={() => handleSearch(row.received)}
-                                            >
-                                                Hop til
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                {displayRows.map((row: RowData) => {
+                                    const isActive = activeRowId === row.id && lastSearchTerm === row.received;
+                                    const buttonLabel = isActive ? "Næste" : "Hop til";
+                                    const isEnabled = row.confidence === "100.0%";
+
+                                    const button = (
+                                        <Button
+                                            variant="contained"
+                                            className="table-action-button"
+                                            onClick={() => handleSearchClick(row.id, row.received)}
+                                            disabled={!isEnabled}
+                                            sx={{
+                                                backgroundColor: !isEnabled ? "#ccc" : undefined,
+                                                color: !isEnabled ? "#666" : undefined,
+                                                pointerEvents: !isEnabled ? "none" : undefined,
+                                            }}
+                                        >
+                                            {buttonLabel}
+                                        </Button>
+                                    );
+
+                                    return (
+                                        <TableRow key={row.id}>
+                                            <TableCell sx={{ fontWeight: "bold" }}>{row.id}</TableCell>
+                                            <TableCell>{row.expected}</TableCell>
+                                            <TableCell>{row.received}</TableCell>
+                                            <TableCell>{row.confidence}</TableCell>
+                                            <TableCell>
+                                                {!isEnabled ? (
+                                                    <Tooltip title="Kan kun bruges ved 100% sikkerhed">
+                                                        <span>{button}</span>
+                                                    </Tooltip>
+                                                ) : (
+                                                    button
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </div>
