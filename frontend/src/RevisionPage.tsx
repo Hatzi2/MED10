@@ -16,11 +16,9 @@ import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
 import { Viewer, Worker } from "@react-pdf-viewer/core";
-import { defaultLayoutPlugin } from "@react-pdf-viewer/default-layout";
 import { searchPlugin } from "@react-pdf-viewer/search";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
-import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import "@react-pdf-viewer/search/lib/styles/index.css";
 
 interface RowData {
@@ -51,25 +49,19 @@ const RevisionPage: React.FC = () => {
     const searchPluginInstance = searchPlugin();
     const { highlight, jumpToNextMatch, clearHighlights } = searchPluginInstance;
 
-    const defaultLayoutPluginInstance = defaultLayoutPlugin({
-        toolbarPlugin: {
-            searchPlugin: () => searchPluginInstance,
-        },
-    });
-
     const [activeRowId, setActiveRowId] = useState<string | null>(null);
     const [lastSearchTerm, setLastSearchTerm] = useState<string | null>(null);
 
-    const handleSearchClick = (rowId: string, value: string) => {
+    const handleSearchClick = async (rowId: string, value: string) => {
         if (!value || value === "N/A") return;
 
-        if (activeRowId === rowId) {
+        if (activeRowId === rowId && lastSearchTerm === value) {
             jumpToNextMatch();
         } else {
             clearHighlights();
             setActiveRowId(rowId);
             setLastSearchTerm(value);
-            highlight(value);
+            await highlight(value);
             jumpToNextMatch();
         }
     };
@@ -81,11 +73,7 @@ const RevisionPage: React.FC = () => {
             </div>
 
             <div className="content-container">
-                <TableContainer
-                    component={Paper}
-                    className="revision-table-container"
-                    sx={{ backgroundColor: "#fafafa" }}
-                >
+                <TableContainer component={Paper} className="revision-table-container" sx={{ backgroundColor: "#fafafa" }}>
                     <div className="table-inner-padding">
                         <Table className="revision-table">
                             <TableHead>
@@ -94,28 +82,19 @@ const RevisionPage: React.FC = () => {
                                     <TableCell sx={{ fontWeight: "bold" }}>
                                         Forventet:
                                         <Tooltip title="Den værdi vi forventer at se ifølge vores data">
-                                            <HelpOutlineIcon
-                                                fontSize="small"
-                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                                            />
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                                         </Tooltip>
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: "bold" }}>
                                         Modtaget:
                                         <Tooltip title="Den værdi fundet i dokumentet">
-                                            <HelpOutlineIcon
-                                                fontSize="small"
-                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                                            />
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                                         </Tooltip>
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: "bold" }}>
                                         Sikkerhed:
                                         <Tooltip title="Hvor sikker modellen er på matchet (%)">
-                                            <HelpOutlineIcon
-                                                fontSize="small"
-                                                sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                                            />
+                                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                                         </Tooltip>
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: "bold" }}>Handling</TableCell>
@@ -124,8 +103,9 @@ const RevisionPage: React.FC = () => {
                             <TableBody>
                                 {displayRows.map((row: RowData) => {
                                     const isActive = activeRowId === row.id && lastSearchTerm === row.received;
-                                    const buttonLabel = isActive ? "Næste" : "Hop til";
                                     const isEnabled = row.confidence === "100.0%";
+
+                                    const buttonLabel = isActive ? "Næste" : "Hop til";
 
                                     const button = (
                                         <Button
@@ -166,15 +146,9 @@ const RevisionPage: React.FC = () => {
                     </div>
                 </TableContainer>
 
-                <div
-                    className="pdf-preview-container"
-                    style={{ height: "600px", width: "100%", marginTop: "20px" }}
-                >
+                <div className="pdf-preview-container" style={{ height: "600px", width: "100%", marginTop: "20px" }}>
                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
-                        <Viewer
-                            fileUrl={pdfPath}
-                            plugins={[defaultLayoutPluginInstance, searchPluginInstance]}
-                        />
+                        <Viewer fileUrl={pdfPath} plugins={[searchPluginInstance]} />
                     </Worker>
                 </div>
             </div>
