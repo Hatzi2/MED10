@@ -88,6 +88,25 @@ const RevisionPage: React.FC = () => {
     navigate("/", { state: { rejectedFiles } });
   };
 
+  // Handler for the "Acceptér" button
+  const handleAccept = () => {
+    // Remove the file from the rejected list if it exists.
+    const storedRejected = localStorage.getItem("rejectedFiles");
+    let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
+    rejectedFiles = rejectedFiles.filter((item: string) => item !== filename);
+    localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
+
+    // Then add the file to the accepted list if not already present.
+    const storedAccepted = localStorage.getItem("acceptedFiles");
+    let acceptedFiles = storedAccepted ? JSON.parse(storedAccepted) : [];
+    if (filename && !acceptedFiles.includes(filename)) {
+      acceptedFiles.push(filename);
+    }
+    localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
+
+    navigate("/", { state: { acceptedFiles } });
+  };
+
   return (
     <div className="revision-container">
       {/* Clickable logo: when clicked, navigates back to homepage */}
@@ -225,10 +244,7 @@ const RevisionPage: React.FC = () => {
         </Button>
 
         <Button
-          onClick={() => {
-            console.log("Accepted!");
-            // Add additional acceptance logic here if needed.
-          }}
+          onClick={handleAccept}
           variant="contained"
           color="success"
           sx={{
