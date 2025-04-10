@@ -225,7 +225,7 @@ const HomePage: React.FC = () => {
                         navigate("/main", { state: { filename: file } })
                       }
                     >
-                      Gå til Autocheck
+                      Gå til sag
                     </Button>
                   </TableCell>
                 </TableRow>
