@@ -123,12 +123,62 @@ const HomePage: React.FC = () => {
                 <TableCell sx={{ fontWeight: "bold" }}>
                   Status:
                   <Tooltip
-                    title="Rød: Ikke accepteret, Gul: Endnu ikke tjekket, Grøn: Accepteret"
+                    title={
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "16px",
+                          padding: "4px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <div
+                            className="red-indicator"
+                            style={{ margin: 0 }}
+                          />
+                          <span>Ikke accepteret</span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <div
+                            className="yellow-indicator"
+                            style={{ margin: 0 }}
+                          />
+                          <span>Endnu ikke tjekket</span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "4px",
+                          }}
+                        >
+                          <div
+                            className="green-indicator"
+                            style={{ margin: 0 }}
+                          />
+                          <span>Accepteret</span>
+                        </div>
+                      </div>
+                    }
                     componentsProps={{
                       tooltip: {
                         sx: {
                           whiteSpace: "nowrap",
-                          maxWidth: "calc(100vw - 20px)", // limit tooltip width to avoid overflow
+                          maxWidth: "calc(100vw - 20px)",
+                          bgcolor: "rgba(97, 97, 97, 0.7)", // change this value for more transparency
                         },
                       },
                     }}
