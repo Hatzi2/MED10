@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import "./HomePage.css";
 
 const HomePage: React.FC = () => {
@@ -119,7 +120,36 @@ const HomePage: React.FC = () => {
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Filnavn</TableCell>
-                <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>
+                  Status:
+                  <Tooltip
+                    title="Rød: Ikke accepteret, Gul: Endnu ikke tjekket, Grøn: Accepteret"
+                    componentsProps={{
+                      tooltip: {
+                        sx: {
+                          whiteSpace: "nowrap",
+                          maxWidth: "calc(100vw - 20px)", // limit tooltip width to avoid overflow
+                        },
+                      },
+                    }}
+                    PopperProps={{
+                      modifiers: [
+                        {
+                          name: "preventOverflow",
+                          enabled: true,
+                          options: {
+                            boundary: "window",
+                          },
+                        },
+                      ],
+                    }}
+                  >
+                    <HelpOutlineIcon
+                      fontSize="small"
+                      sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
+                    />
+                  </Tooltip>
+                </TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}></TableCell>
               </TableRow>
             </TableHead>

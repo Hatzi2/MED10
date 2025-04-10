@@ -21,7 +21,7 @@ body {
 
 .home-container .home-table-container {
   width: 90vw;
-  max-width: 800px;
+  max-width: 1000px;
   max-height: 60vh;
   overflow-y: auto;
   background-color: #fafafa;
