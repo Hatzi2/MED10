@@ -23,6 +23,7 @@ import {
   Backdrop,
 } from "@mui/material";
 import logo from "./assets/logo.png";
+import "./App.css";
 
 const Home: React.FC = () => {
   // Local state for dialog & progress
@@ -134,17 +135,24 @@ const Home: React.FC = () => {
 
   return (
     <div className="app-container">
-      <div className="logo-container" style={{ marginBottom: "40px" }}>
+      <div className="logo-container">
         <img
-                  src={logo}
-                  alt="Logo"
-                  className="logo"
-                  style={{ cursor: "pointer" }}
-                  onClick={() => navigate("/")}
-                />
+          src={logo}
+          alt="Logo"
+          className="logo"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        />
       </div>
-
-      <Container maxWidth="lg" className="content-container">
+  
+      {/* New component to display PDF filename */}
+      <div className="file-name-display">
+        <Typography variant="h6">
+          {filename ? `Valgt fil: ${filename}` : "Ingen fil valgt"}
+        </Typography>
+      </div>
+  
+      <Container maxWidth="lg" className="content-container" style={{ position: "relative", zIndex: 1 }}>
         <Grid container spacing={3}>
           <Grid item xs={12} sm={8}>
             <Grid container spacing={3}>

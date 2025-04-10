@@ -1,38 +1,49 @@
+/* App Container: Single column layout with uniform gap */
 .app-container {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
+  gap: 20px;  /* Uniform spacing between children */
   background-color: white;
+  width: 100vw;
+  height: 100vh;
 }
 
-/* Logo Container */
+/* Logo Container (No explicit positioning unless needed) */
 .logo-container {
-  position: relative;
-  z-index: 10; /* Ensure it stays on top */
+  width: 100%;
+  text-align: center;
 }
 
 /* Logo Size */
 .logo {
-  width: 240px; /* Adjust size */
+  width: 240px;
   height: auto;
 }
 
+/* File Name Display */
+.file-name-display {
+  width: 1132px;
+  text-align: center;
+  background-color: #fafafa;
+  padding: 10px;
+  margin-bottom: 24px;
+  color: black;
+  border-radius: 12px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
+}
 
-/* Centered container */
+/* Content Container: Centering grid items */
 .content-container {
+  width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%; /* Ensure content container fills available width */
 }
 
 /* Placeholder Box */
 .placeholder-box {
-  height: 200px;
+  height: 180px;
   width: 100%; /* Ensure the box stretches within its grid cell */
   display: flex;
   justify-content: center;
@@ -55,7 +66,7 @@
 
 /* New component box styling */
 .new-component-box {
-  height: 628px; /* 3 times the height of the other boxes */
+  height: 568px; /* 3 times the height of the other boxes */
   display: flex;
   justify-content: center;
   align-items: center;
