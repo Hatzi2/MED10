@@ -22,7 +22,7 @@ body {
 .home-container .home-table-container {
   width: 90vw;
   max-width: 800px;
-  max-height: 70vh;
+  max-height: 60vh;
   overflow-y: auto;
   background-color: #fafafa;
   border-radius: 12px;
@@ -62,4 +62,28 @@ button.table-action-button {
   .logo {
     width: 180px;
     height: auto;
+  }
+
+  .red-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: red;
+    margin: 0 auto;
+  }
+
+  .yellow-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: rgb(255, 196, 0);
+    margin: 0 auto;
+  }
+
+  .green-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    background-color: green;
+    margin: 0 auto;
   }

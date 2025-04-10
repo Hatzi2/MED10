@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "./assets/logo.png";
 import {
   Table,
@@ -11,14 +11,58 @@ import {
   Paper,
   Button,
   CircularProgress,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import "./HomePage.css";
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Retrieve accepted/rejected files coming in from navigation state (if any)
+  const acceptedFilesFromNav: string[] = location.state?.acceptedFiles || [];
+  const rejectedFilesFromNav: string[] = location.state?.rejectedFiles || [];
+
+  // Initialize acceptedFiles state from localStorage or navigation state.
+  const [acceptedFiles, setAcceptedFiles] = useState<string[]>(() => {
+    const stored = localStorage.getItem("acceptedFiles");
+    return stored ? JSON.parse(stored) : acceptedFilesFromNav;
+  });
+
+  // Initialize rejectedFiles state from localStorage or navigation state.
+  const [rejectedFiles, setRejectedFiles] = useState<string[]>(() => {
+    const stored = localStorage.getItem("rejectedFiles");
+    return stored ? JSON.parse(stored) : rejectedFilesFromNav;
+  });
+
+  // Merge new accepted files coming via navigation state.
+  useEffect(() => {
+    if (acceptedFilesFromNav.length > 0) {
+      const merged = Array.from(
+        new Set([...acceptedFiles, ...acceptedFilesFromNav])
+      );
+      setAcceptedFiles(merged);
+      localStorage.setItem("acceptedFiles", JSON.stringify(merged));
+    }
+  }, [acceptedFilesFromNav]);
+
+  // Merge new rejected files coming via navigation state.
+  useEffect(() => {
+    if (rejectedFilesFromNav.length > 0) {
+      const merged = Array.from(
+        new Set([...rejectedFiles, ...rejectedFilesFromNav])
+      );
+      setRejectedFiles(merged);
+      localStorage.setItem("rejectedFiles", JSON.stringify(merged));
+    }
+  }, [rejectedFilesFromNav]);
+
   const [files, setFiles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch the list of files from the backend.
   useEffect(() => {
     fetch("http://localhost:5000/list-files")
       .then((res) => res.json())
@@ -34,10 +78,36 @@ const HomePage: React.FC = () => {
       });
   }, []);
 
+  // Reset accepted and rejected files
+  const handleResetAcceptedFiles = () => {
+    localStorage.removeItem("acceptedFiles");
+    localStorage.removeItem("rejectedFiles");
+    setAcceptedFiles([]);
+    setRejectedFiles([]);
+    // Clear navigation state so old data isn't merged back in.
+    navigate(location.pathname, { replace: true, state: {} });
+  };
+
   return (
     <div className="home-container">
       <div className="logo-container">
         <img src={logo} alt="Logo" className="logo" />
+      </div>
+
+      {/* Reset button container above the table (left-aligned) */}
+      <div
+        className="reset-button-container"
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          marginBottom: "10px",
+        }}
+      >
+        <Tooltip title="Reset accepted and rejected files">
+          <IconButton onClick={handleResetAcceptedFiles} size="small">
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
       </div>
 
       {loading ? (
@@ -49,6 +119,7 @@ const HomePage: React.FC = () => {
               <TableRow>
                 <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}>Filnavn</TableCell>
+                <TableCell sx={{ fontWeight: "bold" }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: "bold" }}></TableCell>
               </TableRow>
             </TableHead>
@@ -57,6 +128,15 @@ const HomePage: React.FC = () => {
                 <TableRow key={index}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{file}</TableCell>
+                  <TableCell>
+                    {rejectedFiles.includes(file) ? (
+                      <div className="red-indicator" />
+                    ) : acceptedFiles.includes(file) ? (
+                      <div className="green-indicator" />
+                    ) : (
+                      <div className="yellow-indicator" />
+                    )}
+                  </TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
