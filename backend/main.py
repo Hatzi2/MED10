@@ -99,7 +99,6 @@ def run_search_for_config(config, text, model, queries_to_run):
         config_results[label] = (best_candidate, best_fuzzy_score, best_distance, best_chunk)
     return config, config_results
 
-
 def update_progress_json(progress_dir, pbar, status=""):
     progress_value = round(pbar.n / pbar.total, 4)
     progress_path = os.path.join(progress_dir, "progress.json")
@@ -122,6 +121,21 @@ def update_progress_json(progress_dir, pbar, status=""):
                 "status": status
             }
         }, f, ensure_ascii=False)
+
+def sanitize_matched_substring(text):
+    """
+    Remove commas and periods from the text.
+    Replace any occurrence of "m?" with "m²".
+    """
+    if not text:
+        return text
+    # Remove commas and periods
+    sanitized = text.replace(",", "").replace(".", "")
+    # Replace "m?" with "m²"
+    sanitized = sanitized.replace("m?", "m2")
+    # Replace "m?2" with "m²" first
+    sanitized = sanitized.replace("m?2", "m2")
+    return sanitized
 
 def main():
     json_dir = "Files/Ground-truth"
@@ -218,7 +232,7 @@ def main():
             for label, group in group_mapping.items():
                 group_to_labels.setdefault(group, []).append(label)
 
-            addresses, postal_codes, area_sizes = [], [], []
+            addresses, postal_codes, area_sizes_results = [], [], []
             group_index = 0
 
             for group, labels in group_to_labels.items():
@@ -237,6 +251,8 @@ def main():
                             best_query = next(q for lab, q in queries_to_run if lab == label)
                 if best_overall:
                     candidate, score, dist, chunk_text = best_overall
+                    # Sanitize the best candidate before saving it
+                    candidate = sanitize_matched_substring(candidate)
                     result_data = {
                         "group": group,
                         "query": best_query,
@@ -252,7 +268,7 @@ def main():
                     elif group_index == 1:
                         postal_codes.append(result_data)
                     elif group_index == 2:
-                        area_sizes.append(result_data)
+                        area_sizes_results.append(result_data)
                 group_index += 1
 
             output_data = [
@@ -265,8 +281,8 @@ def main():
                 {
                     "id": "Areal:",
                     "expected": str(area_size),
-                    "received": area_sizes[0]["matched_substring"] if area_sizes else "",
-                    "confidence": f'{area_sizes[0]["fuzzy_score"]}%' if area_sizes else ""
+                    "received": area_sizes_results[0]["matched_substring"] if area_sizes_results else "",
+                    "confidence": f'{area_sizes_results[0]["fuzzy_score"]}%' if area_sizes_results else ""
                 },
                 {
                     "id": "By:",
@@ -287,8 +303,6 @@ def main():
             final_data["main"] = {"progress": 1.0, "status": "Færdig"}
             with open(os.path.join(progressBar_dir, "progress.json"), "w", encoding="utf-8") as f:
                 json.dump(final_data, f, ensure_ascii=False)
-
-
 
 if __name__ == "__main__":
     model_name = "sentence-transformers/xlm-r-100langs-bert-base-nli-stsb-mean-tokens"
