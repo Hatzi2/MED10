@@ -33,6 +33,7 @@ const Home: React.FC = () => {
   const [ocrStatus, setOcrStatus] = useState("");
   const [mainProgress, setMainProgress] = useState(0);
   const [mainStatus, setMainStatus] = useState("");
+
   // Circle state array – index 5 is used for "Brandpolice"
   const [circleStates] = useState<boolean[]>([
     true,
@@ -42,6 +43,7 @@ const Home: React.FC = () => {
     true,
     false,
   ]);
+
   // Data rows from backend (for demonstration)
   const [rows, setRows] = useState([
     { id: "Adresse:", expected: "", received: "", confidence: "" },
@@ -73,7 +75,35 @@ const Home: React.FC = () => {
     navigate("/", { state: { acceptedFiles } });
   };
 
-  // Function to poll backend progress and then open the Autocheck dialog
+  // Poll progress from backend, and wait 2s after both circles are 100%
+  const pollProgress = async () => {
+    try {
+      const res = await fetch(`http://localhost:5000/progress?filename=${filename}`);
+      const data = await res.json();
+
+      const ocrProg = Math.round((data.ocr?.progress || 0) * 100);
+      const mainProg = Math.round((data.main?.progress || 0) * 100);
+
+      setOcrProgress(ocrProg);
+      setOcrStatus(data.ocr?.status || "");
+      setMainProgress(mainProg);
+      setMainStatus(data.main?.status || "");
+
+      // If both are 100%, wait 2s then open the dialog
+      if (ocrProg === 100 && mainProg === 100) {
+        setTimeout(() => {
+          setIsLoading(false);
+          setOpen(true);
+        }, 1000);
+      } else {
+        setTimeout(pollProgress, 200);
+      }
+    } catch (err) {
+      console.error("Error polling progress:", err);
+    }
+  };
+
+  // Function to start the process and poll for backend progress
   const handleDialogOpen = async () => {
     setIsLoading(true);
     setOcrProgress(0);
@@ -83,25 +113,7 @@ const Home: React.FC = () => {
 
     await fetch("http://localhost:5000/reset-progress", { method: "POST" });
 
-    const pollProgress = async () => {
-      try {
-        const res = await fetch(
-          `http://localhost:5000/progress?filename=${filename}`
-        );
-        const data = await res.json();
-        setOcrProgress(Math.round((data.ocr?.progress || 0) * 100));
-        setOcrStatus(data.ocr?.status || "");
-        setMainProgress(Math.round((data.main?.progress || 0) * 100));
-        setMainStatus(data.main?.status || "");
-
-        if ((data.main?.progress || 0) < 1) {
-          setTimeout(pollProgress, 200);
-        }
-      } catch (err) {
-        console.error("Error polling progress:", err);
-      }
-    };
-
+    // Begin polling progress
     pollProgress();
 
     try {
@@ -112,7 +124,6 @@ const Home: React.FC = () => {
       });
 
       const data = await response.json();
-
       if (data.error) {
         console.error("Backend error:", data.error);
         return;
@@ -123,13 +134,11 @@ const Home: React.FC = () => {
         const match = data.find((item: any) => item.id === row.id);
         return match ? { ...row, ...match } : row;
       });
-
       setRows(updatedRows);
-      setOpen(true);
+
+      // Don't open the dialog here; we do it after the 2-second delay in pollProgress
     } catch (error) {
       console.error("Failed to trigger Python script:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -144,24 +153,26 @@ const Home: React.FC = () => {
           onClick={() => navigate("/")}
         />
       </div>
-  
-      {/* New component to display PDF filename */}
+
+      {/* Filename display */}
       <div className="file-name-display">
         <Typography variant="h6">
           {filename ? `Valgt fil: ${filename}` : "Ingen fil valgt"}
         </Typography>
       </div>
-  
-      <Container maxWidth="lg" className="content-container" style={{ position: "relative", zIndex: 1 }}>
+
+      <Container
+        maxWidth="lg"
+        className="content-container"
+        style={{ position: "relative", zIndex: 1 }}
+      >
         <Grid container spacing={3}>
           <Grid item xs={12} sm={8}>
             <Grid container spacing={3}>
               {Array.from({ length: 6 }).map((_, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <Box className="placeholder-box">
-                    <Typography variant="h6">
-                      Placeholder {index + 1}
-                    </Typography>
+                    <Typography variant="h6">Placeholder {index + 1}</Typography>
                   </Box>
                 </Grid>
               ))}
@@ -201,12 +212,7 @@ const Home: React.FC = () => {
       </Container>
 
       {/* Autocheck dialog showing details */}
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Brandpolice for: {filename}</DialogTitle>
         <DialogContent>
           <TableContainer component={Paper}>
@@ -312,6 +318,7 @@ const Home: React.FC = () => {
                 computedText = `${ocrProgress}%`;
               }
             } else {
+              // For "Analyse," only start animating after OCR is complete
               if (ocrProgress < 100) {
                 variant = "determinate";
                 computedValue = 100;
@@ -409,7 +416,7 @@ const Home: React.FC = () => {
                             textAlign: "center",
                           }}
                         >
-                          {`${computedText}`}
+                          {computedText}
                         </Typography>
                       </Box>
                     )}
