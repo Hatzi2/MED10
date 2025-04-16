@@ -44,11 +44,34 @@ const RevisionPage: React.FC = () => {
     ? `http://localhost:5000/pdf/${filename}`
     : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
 
-  // The searchPlugin is still used by the PDF viewer.
+  // The searchPlugin is used by the PDF viewer.
   const searchPluginInstance = searchPlugin();
+
+  // Record the start time when the page loads.
+  const [startTime, setStartTime] = React.useState<number | null>(null);
+  React.useEffect(() => {
+    setStartTime(Date.now());
+  }, []);
+
+  // Function to send the recorded duration and action to the backend.
+  const recordTime = async (duration: number, action: string) => {
+    try {
+      await fetch("http://localhost:5000/timetrack", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, duration, action }),
+      });
+    } catch (error) {
+      console.error("Failed to record time", error);
+    }
+  };
 
   // Handler for the "Afvis" (reject) button.
   const handleReject = () => {
+    if (startTime) {
+      const duration = (Date.now() - startTime) / 1000; // duration in seconds
+      recordTime(duration, "afvis");
+    }
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
     if (filename && !rejectedFiles.includes(filename)) {
@@ -60,6 +83,10 @@ const RevisionPage: React.FC = () => {
 
   // Handler for the "Acceptér" (accept) button.
   const handleAccept = () => {
+    if (startTime) {
+      const duration = (Date.now() - startTime) / 1000; // duration in seconds
+      recordTime(duration, "accepter");
+    }
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
     rejectedFiles = rejectedFiles.filter((item: string) => item !== filename);

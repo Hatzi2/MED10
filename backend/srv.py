@@ -84,5 +84,34 @@ def reset_progress():
         }, f, ensure_ascii=False)
     return jsonify({"status": "reset"}), 200
 
+@app.route("/timetrack", methods=["POST"])
+def record_time():
+    data = request.get_json()
+    filename = data.get("filename")
+    duration = data.get("duration")
+    action = data.get("action")  # "accepter" or "afvis"
+    if not filename or duration is None or not action:
+        return jsonify({"error": "Filename, duration, or action not provided"}), 400
+
+    # File in which to store the time tracking data.
+    timetrack_file = "timetrack.json"
+    # Load existing data if available.
+    if os.path.exists(timetrack_file):
+        with open(timetrack_file, "r", encoding="utf-8") as f:
+            track_data = json.load(f)
+    else:
+        track_data = {}
+    
+    # Update the entry for the given filename with duration and action.
+    track_data[filename] = {
+        "duration": duration,
+        "action": action
+    }
+
+    with open(timetrack_file, "w", encoding="utf-8") as f:
+        json.dump(track_data, f, ensure_ascii=False, indent=4)
+
+    return jsonify({"status": "success", "filename": filename, "duration": duration, "action": action})
+
 if __name__ == "__main__":
     app.run(port=5000)
