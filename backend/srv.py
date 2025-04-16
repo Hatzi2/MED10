@@ -1,14 +1,31 @@
 ﻿# -*- coding: utf-8 -*-
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-from flask import send_from_directory
-import subprocess
-import json
 import os
+import json
+import random
+import subprocess
+from flask import Flask, request, jsonify, send_from_directory
+from flask_cors import CORS
 
 app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
+
+# Global variable to store the selected 5 files.
+selected_files = []
+
+def initialize_selected_files():
+    global selected_files
+    # Construct the full path to the "policer-Raw" folder.
+    folder_path = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
+    if os.path.exists(folder_path):
+        file_list = os.listdir(folder_path)
+        # If there are more than 5 files, randomly select 5; otherwise, use all files.
+        if len(file_list) > 5:
+            selected_files = random.sample(file_list, 5)
+        else:
+            selected_files = file_list
+    else:
+        selected_files = []
 
 @app.route('/pdf/<path:filename>')
 def serve_pdf(filename):
@@ -35,11 +52,8 @@ def run_script():
 
 @app.route("/list-files", methods=["GET"])
 def list_files():
-    folder_path = "Files/policer-Raw"
-    if not os.path.exists(folder_path):
-        return jsonify({"error": "Folder not found"}), 404
-    file_list = os.listdir(folder_path)
-    return jsonify(file_list)
+    # Return the preselected list of 5 random files.
+    return jsonify(selected_files)
 
 @app.route("/progress", methods=["GET"])
 def get_progress():
@@ -89,16 +103,22 @@ def record_time():
     data = request.get_json()
     filename = data.get("filename")
     duration = data.get("duration")
-    action = data.get("action")  # "accepter" or "afvis"
+    action = data.get("action")  # Expected to be "accepter" or "afvis"
     if not filename or duration is None or not action:
         return jsonify({"error": "Filename, duration, or action not provided"}), 400
 
-    # File in which to store the time tracking data.
     timetrack_file = "timetrack.json"
-    # Load existing data if available.
+    # Initialize track_data safely: if file exists, try to load; otherwise, use {}.
     if os.path.exists(timetrack_file):
-        with open(timetrack_file, "r", encoding="utf-8") as f:
-            track_data = json.load(f)
+        try:
+            with open(timetrack_file, "r", encoding="utf-8") as f:
+                contents = f.read().strip()
+                if contents:
+                    track_data = json.loads(contents)
+                else:
+                    track_data = {}
+        except Exception:
+            track_data = {}
     else:
         track_data = {}
     
@@ -112,6 +132,9 @@ def record_time():
         json.dump(track_data, f, ensure_ascii=False, indent=4)
 
     return jsonify({"status": "success", "filename": filename, "duration": duration, "action": action})
+
+# Initialize selected files manually before the first request.
+initialize_selected_files()
 
 if __name__ == "__main__":
     app.run(port=5000)
