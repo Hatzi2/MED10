@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table,
@@ -24,8 +24,6 @@ import "@react-pdf-viewer/search/lib/styles/index.css";
 interface RowData {
   id: string;
   expected: string;
-  received: string;
-  confidence: string;
 }
 
 const RevisionPage: React.FC = () => {
@@ -35,68 +33,38 @@ const RevisionPage: React.FC = () => {
 
   const displayRows: RowData[] =
     rows && rows.length > 0
-      ? rows
+      ? rows.map((row: any) => ({ id: row.id, expected: row.expected }))
       : [
-          {
-            id: "Adresse:",
-            expected: "N/A",
-            received: "N/A",
-            confidence: "N/A",
-          },
-          { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
-          { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
+          { id: "Adresse:", expected: "N/A" },
+          { id: "Areal:", expected: "N/A" },
+          { id: "By:", expected: "N/A" },
         ];
 
   const pdfPath = filename
     ? `http://localhost:5000/pdf/${filename}`
     : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
 
+  // The searchPlugin is still used by the PDF viewer.
   const searchPluginInstance = searchPlugin();
-  const { highlight, jumpToNextMatch, clearHighlights } = searchPluginInstance;
 
-  const [activeRowId, setActiveRowId] = useState<string | null>(null);
-  const [lastSearchTerm, setLastSearchTerm] = useState<string | null>(null);
-
-  const handleSearchClick = async (rowId: string, value: string) => {
-    if (!value || value === "N/A") return;
-
-    if (activeRowId === rowId && lastSearchTerm === value) {
-      jumpToNextMatch();
-    } else {
-      clearHighlights();
-      setActiveRowId(rowId);
-      setLastSearchTerm(value);
-      await highlight(value);
-      jumpToNextMatch();
-    }
-  };
-
-  // Handler for the "Afvis" button (revision rejection).
+  // Handler for the "Afvis" (reject) button.
   const handleReject = () => {
-    // Retrieve current rejected files from localStorage, or initialize an empty array.
     const storedRejected = localStorage.getItem("rejectedFiles");
-    let rejectedFiles: string[] = storedRejected
-      ? JSON.parse(storedRejected)
-      : [];
-    // If the current file is not already marked as rejected, add it.
+    let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
     if (filename && !rejectedFiles.includes(filename)) {
       rejectedFiles.push(filename);
     }
-    // Persist the updated rejected files array.
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
-    // Navigate back to the homepage, passing the rejectedFiles via state.
     navigate("/", { state: { rejectedFiles } });
   };
 
-  // Handler for the "Acceptér" button
+  // Handler for the "Acceptér" (accept) button.
   const handleAccept = () => {
-    // Remove the file from the rejected list if it exists.
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
     rejectedFiles = rejectedFiles.filter((item: string) => item !== filename);
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
 
-    // Then add the file to the accepted list if not already present.
     const storedAccepted = localStorage.getItem("acceptedFiles");
     let acceptedFiles = storedAccepted ? JSON.parse(storedAccepted) : [];
     if (filename && !acceptedFiles.includes(filename)) {
@@ -109,7 +77,7 @@ const RevisionPage: React.FC = () => {
 
   return (
     <div className="revision-container">
-      {/* Clickable logo: when clicked, navigates back to homepage */}
+      {/* Clickable logo navigates back to the homepage */}
       <div className="logo-container">
         <img
           src={logo}
@@ -134,6 +102,7 @@ const RevisionPage: React.FC = () => {
             <Table className="revision-table">
               <TableHead>
                 <TableRow>
+                  {/* This column displays the field names (e.g., Adresse:, Areal:, By:) */}
                   <TableCell sx={{ fontWeight: "bold" }}></TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Forventet:
@@ -144,71 +113,15 @@ const RevisionPage: React.FC = () => {
                       />
                     </Tooltip>
                   </TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>
-                    Modtaget:
-                    <Tooltip title="Den værdi fundet i dokumentet">
-                      <HelpOutlineIcon
-                        fontSize="small"
-                        sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                      />
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>
-                    Sikkerhed:
-                    <Tooltip title="Hvor sikker modellen er på matchet (%)">
-                      <HelpOutlineIcon
-                        fontSize="small"
-                        sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                      />
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: "bold" }}>Handling</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {displayRows.map((row: RowData) => {
-                  const isActive =
-                    activeRowId === row.id && lastSearchTerm === row.received;
-                  const isEnabled = row.confidence === "100.0%";
-
-                  const buttonLabel = isActive ? "Næste" : "Hop til";
-
-                  const button = (
-                    <Button
-                      variant="contained"
-                      className="table-action-button"
-                      onClick={() => handleSearchClick(row.id, row.received)}
-                      disabled={!isEnabled}
-                      sx={{
-                        backgroundColor: !isEnabled ? "#ccc" : undefined,
-                        color: !isEnabled ? "#666" : undefined,
-                        pointerEvents: !isEnabled ? "none" : undefined,
-                      }}
-                    >
-                      {buttonLabel}
-                    </Button>
-                  );
-
-                  return (
-                    <TableRow key={row.id}>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        {row.id}
-                      </TableCell>
-                      <TableCell>{row.expected}</TableCell>
-                      <TableCell>{row.received}</TableCell>
-                      <TableCell>{row.confidence}</TableCell>
-                      <TableCell>
-                        {!isEnabled ? (
-                          <Tooltip title="Kan kun bruges ved 100% sikkerhed">
-                            <span>{button}</span>
-                          </Tooltip>
-                        ) : (
-                          button
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
+                {displayRows.map((row: RowData) => (
+                  <TableRow key={row.id}>
+                    <TableCell sx={{ fontWeight: "bold" }}>{row.id}</TableCell>
+                    <TableCell>{row.expected}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           </div>
@@ -235,7 +148,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="error"
           sx={{
-            width: "150px", // fixed width
+            width: "150px",
             height: "40px",
             color: "white",
           }}
@@ -248,7 +161,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="success"
           sx={{
-            width: "150px", // same fixed width
+            width: "150px",
             height: "40px",
             color: "white",
           }}
