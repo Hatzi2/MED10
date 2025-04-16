@@ -118,5 +118,35 @@ def delete_brandpolice_files():
 
     return jsonify({"status": "deleted"}), 200
 
+# New endpoint for saving the timer tracking info
+@app.route("/save-timetrack", methods=["POST"])
+def save_timetrack():
+    data = request.get_json()
+    filename = data.get("filename")
+    time_taken = data.get("time")
+    action = data.get("action")
+    if not filename or time_taken is None or not action:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    timetrack_file = os.path.join("Files", "timetrack.json")
+    records = {}
+    if os.path.exists(timetrack_file):
+        try:
+            with open(timetrack_file, "r", encoding="utf-8") as f:
+                records = json.load(f)
+        except Exception as e:
+            records = {}
+    # Update record for this PDF file
+    records[filename] = {
+        "time": time_taken,
+        "action": action
+    }
+    try:
+        with open(timetrack_file, "w", encoding="utf-8") as f:
+            json.dump(records, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"status": "saved", "record": records[filename]}), 200
+
 if __name__ == "__main__":
     app.run(port=5000)
