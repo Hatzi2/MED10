@@ -2,7 +2,7 @@
     {
         "id": "Adresse:",
         "expected": "Hikkehøj 6C",
-        "received": "Hikkehøj 6C,",
+        "received": "Hikkehøj 6C",
         "confidence": "100.0%"
     },
     {
