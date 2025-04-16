@@ -1,7 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
-from flask import send_from_directory
 import subprocess
 import json
 import os
@@ -83,6 +82,41 @@ def reset_progress():
             "main": {"progress": 0.0, "status": "Venter på scanning..."}
         }, f, ensure_ascii=False)
     return jsonify({"status": "reset"}), 200
+
+# New endpoint for deleting associated files upon first Brandpolice click
+@app.route("/delete-brandpolice-files", methods=["POST"])
+def delete_brandpolice_files():
+    data = request.get_json()
+    filename = data.get("filename")
+    if not filename:
+        return jsonify({"error": "Filename not provided"}), 400
+
+    base = os.path.splitext(filename)[0]
+    json_path = os.path.join("Files", "Output", f"{base}.json")
+    txt_path = os.path.join("Files", "Policer", f"{base}.txt")
+    
+    errors = []
+    
+    try:
+        if os.path.exists(json_path):
+            os.remove(json_path)
+        else:
+            print(f"JSON file {json_path} does not exist.")
+    except Exception as e:
+        errors.append(str(e))
+    
+    try:
+        if os.path.exists(txt_path):
+            os.remove(txt_path)
+        else:
+            print(f"TXT file {txt_path} does not exist.")
+    except Exception as e:
+        errors.append(str(e))
+    
+    if errors:
+        return jsonify({"error": errors}), 500
+
+    return jsonify({"status": "deleted"}), 200
 
 if __name__ == "__main__":
     app.run(port=5000)

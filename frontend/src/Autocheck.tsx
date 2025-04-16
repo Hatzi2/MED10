@@ -25,6 +25,9 @@ import {
 import logo from "./assets/logo.png";
 import "./App.css";
 
+// Global flag to track if any Brandpolice click has occurred during runtime.
+let globalBrandpoliceClicked = false;
+
 const Home: React.FC = () => {
   // Local state for dialog & progress
   const [open, setOpen] = useState(false);
@@ -89,7 +92,7 @@ const Home: React.FC = () => {
       setMainProgress(mainProg);
       setMainStatus(data.main?.status || "");
 
-      // If both are 100%, wait 2s then open the dialog
+      // If both are 100%, wait 1s then open the dialog
       if (ocrProg === 100 && mainProg === 100) {
         setTimeout(() => {
           setIsLoading(false);
@@ -135,10 +138,38 @@ const Home: React.FC = () => {
         return match ? { ...row, ...match } : row;
       });
       setRows(updatedRows);
-
-      // Don't open the dialog here; we do it after the 2-second delay in pollProgress
+      // The dialog will open after the progress polling completes.
     } catch (error) {
       console.error("Failed to trigger Python script:", error);
+    }
+  };
+
+  // Handler for Brandpolice click that checks the global flag
+  const handleBrandpoliceClick = () => {
+    if (filename) {
+      if (!globalBrandpoliceClicked) {
+        // First time in runtime: Delete associated files and then mark global flag.
+        fetch("http://localhost:5000/delete-brandpolice-files", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename }),
+        })
+          .then((res) => {
+            if (res.ok) {
+              console.log("Associated files deleted.");
+            } else {
+              console.error("Error deleting associated files.");
+            }
+          })
+          .catch((err) => console.error("Delete error:", err))
+          .finally(() => {
+            globalBrandpoliceClicked = true;
+            handleDialogOpen();
+          });
+      } else {
+        // For any subsequent click (regardless of file), just proceed.
+        handleDialogOpen();
+      }
     }
   };
 
@@ -172,7 +203,9 @@ const Home: React.FC = () => {
               {Array.from({ length: 6 }).map((_, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <Box className="placeholder-box">
-                    <Typography variant="h6">Placeholder {index + 1}</Typography>
+                    <Typography variant="h6">
+                      Placeholder {index + 1}
+                    </Typography>
                   </Box>
                 </Grid>
               ))}
@@ -191,8 +224,14 @@ const Home: React.FC = () => {
                   <Grid item key={index} style={{ flex: 1 }}>
                     <Box
                       className="slice-box"
-                      onClick={() => index === 5 && handleDialogOpen()}
-                      style={{ cursor: index === 5 ? "pointer" : "default" }}
+                      onClick={() => {
+                        if (index === 5) {
+                          handleBrandpoliceClick();
+                        }
+                      }}
+                      style={{
+                        cursor: index === 5 ? "pointer" : "default",
+                      }}
                     >
                       <Typography variant="h6">
                         {index === 5 ? "Brandpolice" : `Autocheck ${index + 1}`}
@@ -318,7 +357,6 @@ const Home: React.FC = () => {
                 computedText = `${ocrProgress}%`;
               }
             } else {
-              // For "Analyse," only start animating after OCR is complete
               if (ocrProgress < 100) {
                 variant = "determinate";
                 computedValue = 100;
