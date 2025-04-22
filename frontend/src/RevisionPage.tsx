@@ -133,7 +133,7 @@ const RevisionPage: React.FC = () => {
                   <TableCell sx={{ fontWeight: "bold" }}></TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Forventet:
-                    <Tooltip title="Den værdi vi forventer at se ifølge vores data">
+                    <Tooltip title="Informationen fundet i databasen omkring sagen">
                       <HelpOutlineIcon
                         fontSize="small"
                         sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
