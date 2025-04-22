@@ -1,9 +1,9 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Ørefljppen 9",
+        "expected": "Øreflippen 9",
         "received": "Øreflippen 9",
-        "confidence": "91.66666666666666%"
+        "confidence": "100.0%"
     },
     {
         "id": "Areal:",

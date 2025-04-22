@@ -13,8 +13,8 @@
     },
     {
         "id": "By:",
-        "expected": "Morkeskøv 1313",
+        "expected": "Mørkeskov 1313",
         "received": "1313 Mørkeskov",
-        "confidence": "85.71428571428572%"
+        "confidence": "100.0%"
     }
 ]

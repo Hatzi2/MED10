@@ -1,9 +1,9 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Nujjermandsvei 1",
+        "expected": "Nullermandsvej 1",
         "received": "Nullermandsvej 1",
-        "confidence": "81.25%"
+        "confidence": "100.0%"
     },
     {
         "id": "Areal:",
