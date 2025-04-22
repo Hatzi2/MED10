@@ -1,15 +1,15 @@
 [
     {
         "id": "Adresse:",
-        "expected": "Ørefljppen 9",
+        "expected": "Øreflippen 9",
         "received": "Øreflippen 9",
-        "confidence": "91.66666666666666%"
+        "confidence": "100.0%"
     },
     {
         "id": "Areal:",
         "expected": "119",
-        "received": "119 m2",
-        "confidence": "100.0%"
+        "received": "11 %",
+        "confidence": "75.0%"
     },
     {
         "id": "By:",

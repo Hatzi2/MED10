@@ -9,6 +9,11 @@ app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
 CORS(app)
 
+# Pre-sample 5 PDFs at startup
+PDF_DIR = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
+_all_pdfs = [f for f in os.listdir(PDF_DIR) if f.lower().endswith('.pdf')]
+SAMPLED_FILES = random.sample(_all_pdfs, min(5, len(_all_pdfs)))
+
 @app.route('/pdf/<path:filename>')
 def serve_pdf(filename):
     pdf_dir = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
@@ -34,14 +39,8 @@ def run_script():
 
 @app.route("/list-files", methods=["GET"])
 def list_files():
-    folder_path = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
-    if not os.path.exists(folder_path):
-        return jsonify({"error": "Folder not found"}), 404
-    # List all PDF files
-    file_list = [f for f in os.listdir(folder_path) if f.lower().endswith('.pdf')]
-    # Choose 5 at random to display on homepage
-    sampled = random.sample(file_list, min(5, len(file_list)))
-    return jsonify(sampled)
+    # Always return the same sample picked at startup
+    return jsonify(SAMPLED_FILES)
 
 @app.route("/progress", methods=["GET"])
 def get_progress():
