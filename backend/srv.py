@@ -1,9 +1,9 @@
-﻿# -*- coding: utf-8 -*-
-from flask import Flask, request, jsonify, send_from_directory
+﻿from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import subprocess
 import json
 import os
+import random
 
 app = Flask(__name__)
 app.config["JSON_AS_ASCII"] = False
@@ -34,11 +34,14 @@ def run_script():
 
 @app.route("/list-files", methods=["GET"])
 def list_files():
-    folder_path = "Files/policer-Raw"
+    folder_path = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
     if not os.path.exists(folder_path):
         return jsonify({"error": "Folder not found"}), 404
-    file_list = os.listdir(folder_path)
-    return jsonify(file_list)
+    # List all PDF files
+    file_list = [f for f in os.listdir(folder_path) if f.lower().endswith('.pdf')]
+    # Choose 5 at random to display on homepage
+    sampled = random.sample(file_list, min(5, len(file_list)))
+    return jsonify(sampled)
 
 @app.route("/progress", methods=["GET"])
 def get_progress():
@@ -83,7 +86,6 @@ def reset_progress():
         }, f, ensure_ascii=False)
     return jsonify({"status": "reset"}), 200
 
-# New endpoint for deleting associated files upon first Brandpolice click
 @app.route("/delete-brandpolice-files", methods=["POST"])
 def delete_brandpolice_files():
     data = request.get_json()
@@ -100,16 +102,12 @@ def delete_brandpolice_files():
     try:
         if os.path.exists(json_path):
             os.remove(json_path)
-        else:
-            print(f"JSON file {json_path} does not exist.")
     except Exception as e:
         errors.append(str(e))
     
     try:
         if os.path.exists(txt_path):
             os.remove(txt_path)
-        else:
-            print(f"TXT file {txt_path} does not exist.")
     except Exception as e:
         errors.append(str(e))
     
@@ -118,7 +116,6 @@ def delete_brandpolice_files():
 
     return jsonify({"status": "deleted"}), 200
 
-# New endpoint for saving the timer tracking info
 @app.route("/save-timetrack", methods=["POST"])
 def save_timetrack():
     data = request.get_json()
@@ -134,13 +131,9 @@ def save_timetrack():
         try:
             with open(timetrack_file, "r", encoding="utf-8") as f:
                 records = json.load(f)
-        except Exception as e:
+        except Exception:
             records = {}
-    # Update record for this PDF file
-    records[filename] = {
-        "time": time_taken,
-        "action": action
-    }
+    records[filename] = {"time": time_taken, "action": action}
     try:
         with open(timetrack_file, "w", encoding="utf-8") as f:
             json.dump(records, f, ensure_ascii=False, indent=4)
