@@ -131,19 +131,19 @@ const RevisionPage: React.FC = () => {
                   <TableCell sx={{ fontWeight: "bold" }}></TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Forventet:
-                    <Tooltip title="Den værdi vi forventer at se ifølge vores data">
+                    <Tooltip title="Informationen fundet i databasen omkring sagen">
                       <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Modtaget:
-                    <Tooltip title="Den værdi fundet i dokumentet">
+                    <Tooltip title="Programmet har lavet en avanceret FAISS AI søgning efter det forventede resultat, og viser her det tætteste match, som det kunne finde">
                       <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Sikkerhed:
-                    <Tooltip title="Hvor sikker modellen er på matchet (%)">
+                    <Tooltip title="Hvor ens (%) det forventede og fundne information er">
                       <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
