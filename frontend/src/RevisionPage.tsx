@@ -175,7 +175,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="error"
           sx={{
-            width: "150px",
+            width: "200px",
             height: "40px",
             color: "white",
           }}
@@ -188,7 +188,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="success"
           sx={{
-            width: "150px",
+            width: "200px",
             height: "40px",
             color: "white",
           }}
