@@ -110,8 +110,18 @@ const Home: React.FC = () => {
     }
     localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
     navigate("/", { state: { acceptedFiles } });
-  };
+    };
 
+    const handleReject = () => {
+        recordTimerFinal("afvis");
+        const storedRejected = localStorage.getItem("rejectedFiles");
+        let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
+        if (filename && !rejectedFiles.includes(filename)) {
+            rejectedFiles.push(filename);
+        }
+        localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
+        navigate("/", { state: { rejectedFiles } });
+    };
   // Poll progress from backend; when both progress values reach 100, open the dialog.
   const pollProgress = async () => {
     try {
@@ -295,6 +305,9 @@ const Home: React.FC = () => {
           {/* Revidér Button: Final action not taken here.
               Instead, pause the timer (accumulating time from the dialog) and navigate to RevisionPage.
           */}
+            <Button onClick={handleReject} fullWidth variant="contained" color="error" sx={{ marginTop: "10px" }}>
+            Afvis dokument
+          </Button>
           <Button
             onClick={() => {
               // Pause the timer and accumulate the dialog time.
@@ -306,13 +319,13 @@ const Home: React.FC = () => {
             color="primary"
             sx={{ marginTop: "10px", color: "white" }}
           >
-            Revidér
+            Revidér dokument
           </Button>
 
           {/* Acceptér Button: Final action from the dialog.
               Record the final accumulated time and perform acceptance. */}
           <Button onClick={handleAccept} fullWidth variant="contained" color="success" sx={{ marginTop: "10px" }}>
-            Acceptér
+            Acceptér dokument
           </Button>
         </DialogContent>
       </Dialog>

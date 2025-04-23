@@ -201,12 +201,12 @@ const RevisionPage: React.FC = () => {
       </div>
 
       <div style={{ display: "flex", gap: "12px", marginTop: "20px", justifyContent: "center", alignItems: "center" }}>
-        <Button onClick={handleReject} variant="contained" color="error" sx={{ width: "150px", height: "40px", color: "white" }}>
-          Afvis
+        <Button onClick={handleReject} variant="contained" color="error" sx={{ width: "200px", height: "40px", color: "white" }}>
+          Afvis dokument
         </Button>
 
-        <Button onClick={handleAccept} variant="contained" color="success" sx={{ width: "150px", height: "40px", color: "white" }}>
-          Acceptér
+        <Button onClick={handleAccept} variant="contained" color="success" sx={{ width: "200px", height: "40px", color: "white" }}>
+          Acceptér dokument
         </Button>
       </div>
     </div>
