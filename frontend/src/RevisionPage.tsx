@@ -180,7 +180,7 @@ const RevisionPage: React.FC = () => {
             color: "white",
           }}
         >
-          Afvis
+          Afvis dokument
         </Button>
 
         <Button
@@ -193,7 +193,7 @@ const RevisionPage: React.FC = () => {
             color: "white",
           }}
         >
-          Acceptér
+          Acceptér dokument
         </Button>
       </div>
     </div>
