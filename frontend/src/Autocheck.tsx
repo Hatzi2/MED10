@@ -56,6 +56,22 @@ const Home: React.FC = () => {
   // Retrieve the filename passed from Homepage
   const { filename } = location.state || {};
 
+  const handleReject = () => {
+    // Retrieve current rejected files from localStorage, or initialize an empty array.
+    const storedRejected = localStorage.getItem("rejectedFiles");
+    let rejectedFiles: string[] = storedRejected
+      ? JSON.parse(storedRejected)
+      : [];
+    // If the current file is not already marked as rejected, add it.
+    if (filename && !rejectedFiles.includes(filename)) {
+      rejectedFiles.push(filename);
+    }
+    // Persist the updated rejected files array.
+    localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
+    // Navigate back to the homepage, passing the rejectedFiles via state.
+    navigate("/", { state: { rejectedFiles } });
+  };
+
   // Handler for the "Acceptér" button
   const handleAccept = () => {
     // Remove the file from the rejected list if it exists.
@@ -263,13 +279,23 @@ const Home: React.FC = () => {
           </TableContainer>
 
           <Button
+            onClick={handleReject}
+            fullWidth
+            variant="contained"
+            color="error"
+            sx={{ marginTop: "10px", color: "white" }}
+          >
+            Afvis dokument
+          </Button>
+
+          <Button
             onClick={() => navigate("/revision", { state: { filename, rows } })}
             fullWidth
             variant="contained"
             color="primary"
             sx={{ marginTop: "10px", color: "white" }}
           >
-            Revidér
+            Revidér dokument
           </Button>
 
           <Button
@@ -279,7 +305,7 @@ const Home: React.FC = () => {
             color="success"
             sx={{ marginTop: "10px" }}
           >
-            Acceptér
+            Acceptér dokument
           </Button>
         </DialogContent>
       </Dialog>

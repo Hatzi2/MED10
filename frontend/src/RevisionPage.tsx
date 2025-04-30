@@ -235,12 +235,12 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="error"
           sx={{
-            width: "150px", // fixed width
+            width: "200px", // fixed width
             height: "40px",
             color: "white",
           }}
         >
-          Afvis
+          Afvis dokument
         </Button>
 
         <Button
@@ -248,12 +248,12 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="success"
           sx={{
-            width: "150px", // same fixed width
+            width: "200px", // same fixed width
             height: "40px",
             color: "white",
           }}
         >
-          Acceptér
+          Acceptér dokument
         </Button>
       </div>
     </div>
