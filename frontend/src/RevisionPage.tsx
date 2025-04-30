@@ -73,30 +73,24 @@ const RevisionPage: React.FC = () => {
 
   // Handler for the "Afvis" button (revision rejection).
   const handleReject = () => {
-    // Retrieve current rejected files from localStorage, or initialize an empty array.
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles: string[] = storedRejected
       ? JSON.parse(storedRejected)
       : [];
-    // If the current file is not already marked as rejected, add it.
     if (filename && !rejectedFiles.includes(filename)) {
       rejectedFiles.push(filename);
     }
-    // Persist the updated rejected files array.
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
-    // Navigate back to the homepage, passing the rejectedFiles via state.
     navigate("/", { state: { rejectedFiles } });
   };
 
   // Handler for the "Acceptér" button
   const handleAccept = () => {
-    // Remove the file from the rejected list if it exists.
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
     rejectedFiles = rejectedFiles.filter((item: string) => item !== filename);
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
 
-    // Then add the file to the accepted list if not already present.
     const storedAccepted = localStorage.getItem("acceptedFiles");
     let acceptedFiles = storedAccepted ? JSON.parse(storedAccepted) : [];
     if (filename && !acceptedFiles.includes(filename)) {
@@ -109,7 +103,6 @@ const RevisionPage: React.FC = () => {
 
   return (
     <div className="revision-container">
-      {/* Clickable logo: when clicked, navigates back to homepage */}
       <div className="logo-container">
         <img
           src={logo}
@@ -167,6 +160,10 @@ const RevisionPage: React.FC = () => {
               </TableHead>
               <TableBody>
                 {displayRows.map((row: RowData) => {
+                  const rawValue = parseFloat(row.confidence);
+                  const isLowConfidence = !isNaN(rawValue) && rawValue < 90;
+                  const isMidConfidence = !isNaN(rawValue) && rawValue >= 90 && rawValue < 100;
+
                   const isActive =
                     activeRowId === row.id && lastSearchTerm === row.received;
                   const isEnabled = row.confidence === "100.0%";
@@ -190,9 +187,26 @@ const RevisionPage: React.FC = () => {
                   );
 
                   return (
-                    <TableRow key={row.id}>
+                    <TableRow
+                      key={row.id}
+                      sx={{
+                        backgroundColor: isLowConfidence
+                          ? "rgba(255, 0, 0, 0.1)"
+                          : isMidConfidence
+                          ? "rgba(255, 255, 0, 0.1)"
+                          : undefined,
+                      }}
+                    >
                       <TableCell sx={{ fontWeight: "bold" }}>
                         {row.id}
+                        {row.id === "Areal:" && (
+                          <Tooltip title="Omfatter husets areal i kvadratmeter">
+                            <HelpOutlineIcon
+                              fontSize="small"
+                              sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
+                            />
+                          </Tooltip>
+                        )}
                       </TableCell>
                       <TableCell>{row.expected}</TableCell>
                       <TableCell>{row.received}</TableCell>
@@ -235,7 +249,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="error"
           sx={{
-            width: "200px", // fixed width
+            width: "200px",
             height: "40px",
             color: "white",
           }}
@@ -248,7 +262,7 @@ const RevisionPage: React.FC = () => {
           variant="contained"
           color="success"
           sx={{
-            width: "200px", // same fixed width
+            width: "200px",
             height: "40px",
             color: "white",
           }}
