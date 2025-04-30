@@ -236,7 +236,7 @@ const Home: React.FC = () => {
               <TableHead>
                 <TableRow>
                   <TableCell></TableCell>
-                  <TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
                     Forventet:
                     <Tooltip title="Informationen fundet i databasen omkring sagen">
                       <HelpOutlineIcon
@@ -245,8 +245,8 @@ const Home: React.FC = () => {
                       />
                     </Tooltip>
                   </TableCell>
-                  <TableCell>
-                    Modtaget:
+                  <TableCell sx={{ fontWeight: "bold" }}>
+                    Fundet:
                     <Tooltip title="Programmet har lavet en avanceret FAISS AI søgning efter det forventede resultat, og viser her det tætteste match, som det kunne finde">
                       <HelpOutlineIcon
                         fontSize="small"
@@ -254,7 +254,7 @@ const Home: React.FC = () => {
                       />
                     </Tooltip>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>
                     Sikkerhed:
                     <Tooltip title="Hvor ens (%) det forventede og fundne information er">
                       <HelpOutlineIcon
