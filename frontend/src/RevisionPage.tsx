@@ -11,7 +11,11 @@ import {
   Button,
   Tooltip,
 } from "@mui/material";
+import { yellow } from "@mui/material/colors";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
@@ -37,12 +41,7 @@ const RevisionPage: React.FC = () => {
     rows && rows.length > 0
       ? rows
       : [
-          {
-            id: "Adresse:",
-            expected: "N/A",
-            received: "N/A",
-            confidence: "N/A",
-          },
+          { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
           { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
           { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
         ];
@@ -71,31 +70,23 @@ const RevisionPage: React.FC = () => {
     }
   };
 
-  // Handler for the "Afvis" button (revision rejection).
   const handleReject = () => {
     const storedRejected = localStorage.getItem("rejectedFiles");
-    let rejectedFiles: string[] = storedRejected
-      ? JSON.parse(storedRejected)
-      : [];
-    if (filename && !rejectedFiles.includes(filename)) {
-      rejectedFiles.push(filename);
-    }
+    let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
+    if (filename && !rejectedFiles.includes(filename)) rejectedFiles.push(filename);
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
     navigate("/", { state: { rejectedFiles } });
   };
 
-  // Handler for the "Acceptér" button
   const handleAccept = () => {
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
-    rejectedFiles = rejectedFiles.filter((item: string) => item !== filename);
+    rejectedFiles = rejectedFiles.filter((item) => item !== filename);
     localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
 
     const storedAccepted = localStorage.getItem("acceptedFiles");
     let acceptedFiles = storedAccepted ? JSON.parse(storedAccepted) : [];
-    if (filename && !acceptedFiles.includes(filename)) {
-      acceptedFiles.push(filename);
-    }
+    if (filename && !acceptedFiles.includes(filename)) acceptedFiles.push(filename);
     localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
 
     navigate("/", { state: { acceptedFiles } });
@@ -117,11 +108,7 @@ const RevisionPage: React.FC = () => {
         <TableContainer
           component={Paper}
           className="revision-table-container"
-          sx={{
-            backgroundColor: "#fafafa",
-            borderRadius: "12px",
-            boxShadow: "0px 4px 6px rgba(0,0,0,0.1)",
-          }}
+          sx={{ backgroundColor: "#fafafa", borderRadius: "12px", boxShadow: "0px 4px 6px rgba(0,0,0,0.1)" }}
         >
           <div className="table-inner-padding">
             <Table className="revision-table">
@@ -131,44 +118,54 @@ const RevisionPage: React.FC = () => {
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Forventet:
                     <Tooltip title="Informationen fundet i databasen omkring sagen">
-                      <HelpOutlineIcon
-                        fontSize="small"
-                        sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                      />
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
                     Fundet:
                     <Tooltip title="Programmet har lavet en avanceret FAISS AI søgning efter det forventede resultat, og viser her det tætteste match, som det kunne finde">
-                      <HelpOutlineIcon
-                        fontSize="small"
-                        sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                      />
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>
-                    Sikkerhed:
-                    <Tooltip title="Hvor ens (%) det forventede og fundne information er">
-                      <HelpOutlineIcon
-                        fontSize="small"
-                        sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                      />
+                    Match:
+                    <Tooltip
+                      componentsProps={{ tooltip: { sx: { maxWidth: 500 } } }}
+                      title={
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <CancelIcon color="error" fontSize="small" />
+                          Fandt intet match
+                          <RemoveCircleIcon sx={{ color: yellow[700] }} fontSize="small" />
+                          Fandt delvist match
+                          <CheckCircleIcon color="success" fontSize="small" />
+                          Fandt match
+                        </span>
+                      }
+                    >
+                      <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                     </Tooltip>
                   </TableCell>
                   <TableCell sx={{ fontWeight: "bold" }}>Handling</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {displayRows.map((row: RowData) => {
+                {displayRows.map((row) => {
                   const rawValue = parseFloat(row.confidence);
                   const isLowConfidence = !isNaN(rawValue) && rawValue < 90;
                   const isMidConfidence = !isNaN(rawValue) && rawValue >= 90 && rawValue < 100;
 
-                  const isActive =
-                    activeRowId === row.id && lastSearchTerm === row.received;
-                  const isEnabled = row.confidence === "100.0%";
-
+                  const isActive = activeRowId === row.id && lastSearchTerm === row.received;
+                  const isEnabled = rawValue === 100;
                   const buttonLabel = isActive ? "Næste" : "Hop til";
+
+                  let confidenceIcon: React.ReactNode;
+                  if (!isNaN(rawValue)) {
+                    if (rawValue === 100) confidenceIcon = <CheckCircleIcon color="success" />;
+                    else if (rawValue > 90) confidenceIcon = <RemoveCircleIcon sx={{ color: yellow[700] }} />;
+                    else confidenceIcon = <CancelIcon color="error" />;
+                  } else {
+                    confidenceIcon = row.confidence;
+                  }
 
                   const button = (
                     <Button
@@ -176,11 +173,7 @@ const RevisionPage: React.FC = () => {
                       className="table-action-button"
                       onClick={() => handleSearchClick(row.id, row.received)}
                       disabled={!isEnabled}
-                      sx={{
-                        backgroundColor: !isEnabled ? "#ccc" : undefined,
-                        color: !isEnabled ? "#666" : undefined,
-                        pointerEvents: !isEnabled ? "none" : undefined,
-                      }}
+                      sx={{ backgroundColor: !isEnabled ? "#ccc" : undefined, color: !isEnabled ? "#666" : undefined, pointerEvents: !isEnabled ? "none" : undefined }}
                     >
                       {buttonLabel}
                     </Button>
@@ -189,36 +182,21 @@ const RevisionPage: React.FC = () => {
                   return (
                     <TableRow
                       key={row.id}
-                      sx={{
-                        backgroundColor: isLowConfidence
-                          ? "rgba(255, 0, 0, 0.1)"
-                          : isMidConfidence
-                          ? "rgba(255, 255, 0, 0.1)"
-                          : undefined,
-                      }}
+                      sx={{ backgroundColor: isLowConfidence ? "rgba(255, 0, 0, 0.1)" : isMidConfidence ? "rgba(255, 255, 0, 0.1)" : undefined }}
                     >
                       <TableCell sx={{ fontWeight: "bold" }}>
                         {row.id}
                         {row.id === "Areal:" && (
                           <Tooltip title="Omfatter husets areal i kvadratmeter">
-                            <HelpOutlineIcon
-                              fontSize="small"
-                              sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }}
-                            />
+                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
                           </Tooltip>
                         )}
                       </TableCell>
                       <TableCell>{row.expected}</TableCell>
                       <TableCell>{row.received}</TableCell>
-                      <TableCell>{row.confidence}</TableCell>
+                      <TableCell>{confidenceIcon}</TableCell>
                       <TableCell>
-                        {!isEnabled ? (
-                          <Tooltip title="Kan kun bruges ved 100% sikkerhed">
-                            <span>{button}</span>
-                          </Tooltip>
-                        ) : (
-                          button
-                        )}
+                        {!isEnabled ? <Tooltip title="Kan kun bruges ved 100% sikkerhed"><span>{button}</span></Tooltip> : button}
                       </TableCell>
                     </TableRow>
                   );
@@ -235,38 +213,11 @@ const RevisionPage: React.FC = () => {
         </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          marginTop: "20px",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          onClick={handleReject}
-          variant="contained"
-          color="error"
-          sx={{
-            width: "200px",
-            height: "40px",
-            color: "white",
-          }}
-        >
+      <div style={{ display: "flex", gap: "12px", marginTop: "20px", justifyContent: "center", alignItems: "center" }}>
+        <Button onClick={handleReject} variant="contained" color="error" sx={{ width: "200px", height: "40px", color: "white" }}>
           Afvis dokument
         </Button>
-
-        <Button
-          onClick={handleAccept}
-          variant="contained"
-          color="success"
-          sx={{
-            width: "200px",
-            height: "40px",
-            color: "white",
-          }}
-        >
+        <Button onClick={handleAccept} variant="contained" color="success" sx={{ width: "200px", height: "40px", color: "white" }}>
           Acceptér dokument
         </Button>
       </div>
