@@ -34,10 +34,12 @@ const Home: React.FC = () => {
   const location = useLocation();
   const { filename } = location.state || {};
 
-  const stored = localStorage.getItem("acceptedFiles");
-  const acceptedFiles: string[] = stored ? JSON.parse(stored) : [];
-  const brandpoliceIsGreen = Boolean(filename && acceptedFiles.includes(filename));
+  const storedAccepted = localStorage.getItem("acceptedFiles");
+  const acceptedFiles: string[] = storedAccepted ? JSON.parse(storedAccepted) : [];
+  const storedRejected = localStorage.getItem("rejectedFiles");
+  const rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
 
+  const brandpoliceIsGreen = Boolean(filename) && acceptedFiles.includes(filename) && !rejectedFiles.includes(filename);
   // All other slices stay true (green), but index 5 is dynamic
   const circleStates = [
     brandpoliceIsGreen, true, true, true, true, true
@@ -151,7 +153,17 @@ const Home: React.FC = () => {
                     <Box
                       className="slice-box"
                       onClick={() => index === 0 && handleBrandpolice()}
-                      style={{ cursor: index === 0 ? "pointer" : "default" }}
+      sx={{
+        cursor: index === 0 ? 'pointer' : 'default',
+        // only Brandpolice gets the hover border
+        ...(index === 0 && {
+          '&:hover': {
+            border: '2px solid rgb(216, 215, 215)',
+            borderRadius: '4px',
+          },
+        })
+      }}
+      style={{ height: '100%' }}
                     >
                       <Typography variant="h6">
                         {index === 0 ? "Brandpolice" : `Autocheck ${index + 1}`}

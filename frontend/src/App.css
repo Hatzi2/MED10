@@ -93,8 +93,8 @@
 }
 
 /* Hover state for slice box */
-.slice-box:hover {
-  border-color: #cecdcd; /* Change the border color on hover (green in this case) */
+.slice-box.brandpolice:hover {
+  border-color: #cccccc;
 }
 
 /* Text color inside slice */
