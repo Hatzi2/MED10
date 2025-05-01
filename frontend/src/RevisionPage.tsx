@@ -59,13 +59,22 @@ const RevisionPage: React.FC = () => {
   const handleSearchClick = async (rowId: string, value: string) => {
     if (!value || value === "N/A") return;
 
-    if (activeRowId === rowId && lastSearchTerm === value) {
+    // Determine search term
+    let searchTerm = value;
+    if (rowId === "Areal:") {
+      // Extract the last numeric value, ignoring units like m2 or kvm
+      const matches = Array.from(value.matchAll(/\d+(?:[.,]\d+)?/g));
+      const lastMatch = matches.length ? matches[matches.length - 1][0] : null;
+      searchTerm = lastMatch || value;
+    }
+
+    if (activeRowId === rowId && lastSearchTerm === searchTerm) {
       jumpToNextMatch();
     } else {
       clearHighlights();
       setActiveRowId(rowId);
-      setLastSearchTerm(value);
-      await highlight(value);
+      setLastSearchTerm(searchTerm);
+      await highlight(searchTerm);
       jumpToNextMatch();
     }
   };
@@ -155,7 +164,7 @@ const RevisionPage: React.FC = () => {
                   const isMidConfidence = !isNaN(rawValue) && rawValue >= 80 && rawValue < 100;
 
                   const isActive = activeRowId === row.id && lastSearchTerm === row.received;
-                  const isEnabled = rawValue === 100;
+                  const isEnabled = !isNaN(rawValue) && rawValue >= 80;
                   const buttonLabel = isActive ? "Næste" : "Hop til";
 
                   let confidenceIcon: React.ReactNode;
@@ -196,7 +205,13 @@ const RevisionPage: React.FC = () => {
                       <TableCell>{row.received}</TableCell>
                       <TableCell>{confidenceIcon}</TableCell>
                       <TableCell>
-                        {!isEnabled ? <Tooltip title="Kan kun bruges ved 100% sikkerhed"><span>{button}</span></Tooltip> : button}
+                        {!isEnabled ? (
+                          <Tooltip title="Kan kun bruges ved mindst 80% sikkerhed">
+                            <span>{button}</span>
+                          </Tooltip>
+                        ) : (
+                          button
+                        )}
                       </TableCell>
                     </TableRow>
                   );
