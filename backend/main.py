@@ -131,10 +131,10 @@ def sanitize_matched_substring(text):
         return text
     # Remove commas and periods
     sanitized = text.replace(",", "").replace(".", "")
-    # Replace "m?" with "m²"
-    sanitized = sanitized.replace("m?", "m2")
     # Replace "m?2" with "m²" first
     sanitized = sanitized.replace("m?2", "m2")
+    # Replace "m?" with "m²"
+    sanitized = sanitized.replace("m?", "m2")
     return sanitized
 
 def main():

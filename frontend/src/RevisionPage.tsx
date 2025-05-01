@@ -42,8 +42,8 @@ const RevisionPage: React.FC = () => {
       ? rows
       : [
           { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
-          { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
           { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
+          { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
         ];
 
   const pdfPath = filename
@@ -151,8 +151,8 @@ const RevisionPage: React.FC = () => {
               <TableBody>
                 {displayRows.map((row) => {
                   const rawValue = parseFloat(row.confidence);
-                  const isLowConfidence = !isNaN(rawValue) && rawValue < 90;
-                  const isMidConfidence = !isNaN(rawValue) && rawValue >= 90 && rawValue < 100;
+                  const isLowConfidence = !isNaN(rawValue) && rawValue < 80;
+                  const isMidConfidence = !isNaN(rawValue) && rawValue >= 80 && rawValue < 100;
 
                   const isActive = activeRowId === row.id && lastSearchTerm === row.received;
                   const isEnabled = rawValue === 100;
@@ -161,7 +161,7 @@ const RevisionPage: React.FC = () => {
                   let confidenceIcon: React.ReactNode;
                   if (!isNaN(rawValue)) {
                     if (rawValue === 100) confidenceIcon = <CheckCircleIcon color="success" />;
-                    else if (rawValue > 90) confidenceIcon = <RemoveCircleIcon sx={{ color: yellow[700] }} />;
+                    else if (rawValue > 80) confidenceIcon = <RemoveCircleIcon sx={{ color: yellow[700] }} />;
                     else confidenceIcon = <CancelIcon color="error" />;
                   } else {
                     confidenceIcon = row.confidence;

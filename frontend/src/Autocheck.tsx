@@ -24,8 +24,8 @@ const Home: React.FC = () => {
   // Data rows from backend
   const [rows, setRows] = useState([
     { id: "Adresse:", expected: "", received: "", confidence: "" },
-    { id: "Areal:", expected: "", received: "", confidence: "" },
     { id: "By:", expected: "", received: "", confidence: "" },
+    { id: "Areal:", expected: "", received: "", confidence: "" },
   ]);
 
   // Keep a ref to the latest rows for navigation
