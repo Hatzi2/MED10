@@ -30,20 +30,18 @@ const Home: React.FC = () => {
 
   // Keep a ref to the latest rows for navigation
   const updatedRowsRef = useRef(rows);
-
-  // Circle state array – index 5 is "Brandpolice"
-  const [circleStates] = useState<boolean[]>([
-    true,
-    true,
-    true,
-    true,
-    true,
-    false,
-  ]);
-
   const navigate = useNavigate();
   const location = useLocation();
   const { filename } = location.state || {};
+
+  const stored = localStorage.getItem("acceptedFiles");
+  const acceptedFiles: string[] = stored ? JSON.parse(stored) : [];
+  const brandpoliceIsGreen = Boolean(filename && acceptedFiles.includes(filename));
+
+  // All other slices stay true (green), but index 5 is dynamic
+  const circleStates = [
+    brandpoliceIsGreen, true, true, true, true, true
+  ];
 
   // Poll progress from backend, then navigate with data when done
   const pollProgress = async () => {
@@ -152,11 +150,11 @@ const Home: React.FC = () => {
                   <Grid item key={index} style={{ flex: 1 }}>
                     <Box
                       className="slice-box"
-                      onClick={() => index === 5 && handleBrandpolice()}
-                      style={{ cursor: index === 5 ? "pointer" : "default" }}
+                      onClick={() => index === 0 && handleBrandpolice()}
+                      style={{ cursor: index === 0 ? "pointer" : "default" }}
                     >
                       <Typography variant="h6">
-                        {index === 5 ? "Brandpolice" : `Autocheck ${index + 1}`}
+                        {index === 0 ? "Brandpolice" : `Autocheck ${index + 1}`}
                       </Typography>
                       <div className="circle-container">
                         <div className={isGreen ? "green-circle" : "red-circle"}></div>
