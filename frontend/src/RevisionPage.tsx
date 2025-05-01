@@ -73,8 +73,15 @@ const RevisionPage: React.FC = () => {
   const handleReject = () => {
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
-    if (filename && !rejectedFiles.includes(filename)) rejectedFiles.push(filename);
-    localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
+    if (filename && !rejectedFiles.includes(filename)) {
+      rejectedFiles.push(filename);
+      localStorage.setItem("rejectedFiles", JSON.stringify(rejectedFiles));
+    }
+    const storedAccepted = localStorage.getItem("acceptedFiles");
+    let acceptedFiles: string[] = storedAccepted ? JSON.parse(storedAccepted) : [];
+    acceptedFiles = acceptedFiles.filter((item) => item !== filename);
+    localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
+
     navigate("/", { state: { rejectedFiles } });
   };
 
