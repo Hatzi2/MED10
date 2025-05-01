@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import logo from "./assets/logo.png";
 import {
@@ -89,6 +89,18 @@ const HomePage: React.FC = () => {
     navigate(location.pathname, { replace: true, state: {} });
   };
 
+  // 0 = yellow (unchecked), 1 = red (rejected), 2 = green (accepted)
+  const getStatusRank = (file: string) => {
+    if (!acceptedFiles.includes(file) && !rejectedFiles.includes(file)) return 0;
+    if (rejectedFiles.includes(file)) return 1;
+    return 2;
+  };
+
+  // Sort files by status rank, recalculating only when dependencies change
+  const sortedFiles = useMemo(() => {
+    return [...files].sort((a, b) => getStatusRank(a) - getStatusRank(b));
+  }, [files, acceptedFiles, rejectedFiles]);
+
   return (
     <div className="home-container">
       <div className="logo-container">
@@ -139,10 +151,7 @@ const HomePage: React.FC = () => {
                             gap: "4px",
                           }}
                         >
-                          <div
-                            className="red-indicator"
-                            style={{ margin: 0 }}
-                          />
+                          <div className="red-indicator" style={{ margin: 0 }} />
                           <span>Ikke accepteret</span>
                         </div>
                         <div
@@ -178,7 +187,7 @@ const HomePage: React.FC = () => {
                         sx: {
                           whiteSpace: "nowrap",
                           maxWidth: "calc(100vw - 20px)",
-                          bgcolor: "rgba(97, 97, 97, 0.7)", // change this value for more transparency
+                          bgcolor: "rgba(97, 97, 97, 0.7)",
                         },
                       },
                     }}
@@ -204,8 +213,8 @@ const HomePage: React.FC = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {files.map((file, index) => (
-                <TableRow key={index}>
+              {sortedFiles.map((file, index) => (
+                <TableRow key={file}>
                   <TableCell>{index + 1}</TableCell>
                   <TableCell>{file}</TableCell>
                   <TableCell>
