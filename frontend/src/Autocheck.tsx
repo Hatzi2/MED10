@@ -184,7 +184,7 @@ const Home: React.FC = () => {
       <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Box display="flex" gap={6} justifyContent="center">
           {[
-            { label: "OCR", progress: ocrProgress, status: ocrStatus, type: "ocr" },
+            { label: "Scanner dokument", progress: ocrProgress, status: ocrStatus, type: "ocr" },
             { label: "Analyse", progress: mainProgress, status: mainStatus, type: "main" },
           ].map(({ label, progress, status, type }, index) => {
             const isComplete = progress === 100;
