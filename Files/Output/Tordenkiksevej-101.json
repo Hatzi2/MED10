@@ -2,8 +2,8 @@
     {
         "id": "Adresse:",
         "expected": "Tordenkiksevej 101",
-        "received": "Tordenkiksevej 101",
-        "confidence": "100.0%"
+        "received": "Tordenkjksevei 101",
+        "confidence": "88.88888888888889%"
     },
     {
         "id": "Areal:",
