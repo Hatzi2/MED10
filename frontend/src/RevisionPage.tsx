@@ -105,6 +105,7 @@ const RevisionPage: React.FC = () => {
 
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [lastSearchTerm, setLastSearchTerm] = useState<string | null>(null);
+  const [highlightInfo, setHighlightInfo] = useState<{total: number, current: number} | null>(null);
 
   // Direct DOM-based approach to detect highlights in the PDF viewer
   const detectHighlightsInDOM = async (): Promise<boolean> => {
@@ -116,12 +117,24 @@ const RevisionPage: React.FC = () => {
           const highlightElements = document.querySelectorAll('.rpv-search__highlight');
           const hasHighlights = highlightElements.length > 0;
           console.log(`DOM check found ${highlightElements.length} highlight elements`);
+          
+          // Set the highlight info state if highlights were found
+          if (hasHighlights) {
+            setHighlightInfo({
+              total: highlightElements.length,
+              current: 1 // Start at the first highlight
+            });
+          } else {
+            setHighlightInfo(null);
+          }
+          
           resolve(hasHighlights);
         } catch (error) {
           console.error("Error checking for highlights in DOM:", error);
+          setHighlightInfo(null);
           resolve(false);
         }
-      }, 10); // Wait 300ms for rendering
+      }, 10); // Wait 10ms for rendering
     });
   };
 
@@ -180,6 +193,17 @@ const RevisionPage: React.FC = () => {
     if (activeRowId === rowId && lastSearchTerm === baseTerm) {
       console.log(`Jumping to next match for: "${baseTerm}"`);
       jumpToNextMatch();
+      
+      // Update the current highlight position
+      if (highlightInfo) {
+        setHighlightInfo({
+          ...highlightInfo,
+          current: highlightInfo.current < highlightInfo.total 
+            ? highlightInfo.current + 1 
+            : 1 // Wrap around to the first highlight if we've reached the end
+        });
+      }
+      
       return;
     }
 
@@ -199,6 +223,7 @@ const RevisionPage: React.FC = () => {
       clearHighlights();
       setActiveRowId(null);
       setLastSearchTerm(null);
+      setHighlightInfo(null);
       console.log("Search failed: No matches found for any variant");
       
       // Additional fallback - try a direct regex search as last resort
@@ -295,7 +320,12 @@ const RevisionPage: React.FC = () => {
                   const isMid = !isNaN(raw) && raw >= 80 && raw < 100;
                   const isEnabled = !isNaN(raw) && raw >= 80;
                   const isActive = activeRowId === row.id;
-                  const buttonLabel = isActive ? "Næste" : "Hop til";
+                  
+                  // Create the button label with highlight info if applicable
+                  let buttonLabel = isActive ? "Næste" : "Hop til";
+                  if (isActive && highlightInfo) {
+                    buttonLabel = `Næste (${highlightInfo.current}/${highlightInfo.total})`;
+                  }
 
                   let confidenceIcon: React.ReactNode;
                   if (!isNaN(raw)) {
@@ -312,7 +342,12 @@ const RevisionPage: React.FC = () => {
                       className="table-action-button"
                       onClick={() => handleSearchClick(row.id, row.received)}
                       disabled={!isEnabled}
-                      sx={{ backgroundColor: !isEnabled ? "#ccc" : undefined, color: !isEnabled ? "#666" : undefined }}
+                      sx={{ 
+                        backgroundColor: !isEnabled ? "#ccc" : undefined, 
+                        color: !isEnabled ? "#666" : undefined,
+                        minWidth: "120px", // Fixed width to accommodate both states
+                        width: "120px"
+                      }}
                     >
                       {buttonLabel}
                     </Button>
@@ -333,7 +368,6 @@ const RevisionPage: React.FC = () => {
                     <TableCell>{confidenceIcon}</TableCell>
                     <TableCell>{!isEnabled ? <Tooltip title="Min. 80% sikkerhed kræves"><span>{button}</span></Tooltip> : button}</TableCell>
                   </TableRow>
-
                   );
                 })}
               </TableBody>
