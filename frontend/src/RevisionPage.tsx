@@ -168,9 +168,9 @@ const RevisionPage: React.FC = () => {
     // strip units for Areal
     let baseTerm = value;
     if (rowId === "Areal:") {
-      // 1) strip out the units “kvm” and “m2”
+      // 1) strip out the units "kvm" and "m2"
       const cleaned = value.replace(/\b(?:kvm|m2)\b/gi, "").trim();
-      // 2) grab the first numeric sequence (e.g. “198”)
+      // 2) grab the first numeric sequence (e.g. "198")
       const m = cleaned.match(/\d+(?:[.,]\d+)?/);
       baseTerm = m ? m[0] : value;
     }    
@@ -319,26 +319,21 @@ const RevisionPage: React.FC = () => {
                   );
 
                   return (
-                    <TableRow key={row.id} sx={{ backgroundColor: isLow ? "rgba(255,0,0,0.1)" : isMid ? "rgba(255,255,0,0.1)" : undefined }}>
-                      <TableCell sx={{ fontWeight: "bold" }}>
-                        {row.id}
-                        {row.id === "Areal:" && (
-                          <Tooltip title="Omfatter husets areal i kvadratmeter">
-                            <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
-                          </Tooltip>
-                        )}
-                      </TableCell>
-                      <TableCell>{row.expected}</TableCell>
-                      <TableCell>{row.received}</TableCell>
-                      <TableCell>{confidenceIcon}</TableCell>
-                      <TableCell>
-                        {!isEnabled ? (
-                          <Tooltip title="Min. 80% sikkerhed kræves"><span>{button}</span></Tooltip>
-                        ) : (
-                          button
-                        )}
-                      </TableCell>
-                    </TableRow>
+                  <TableRow key={row.id} sx={{ backgroundColor: isLow ? "rgba(255,0,0,0.1)" : isMid ? "rgba(255,255,0,0.1)" : undefined }}>
+                    <TableCell sx={{ fontWeight: "bold" }}>
+                      {row.id}
+                      {row.id === "Areal:" && (
+                        <Tooltip title="Kvadratmeter på ejendommen">
+                          <HelpOutlineIcon fontSize="small" sx={{ ml: 0.5, verticalAlign: "middle", color: "gray" }} />
+                        </Tooltip>
+                      )}
+                    </TableCell>
+                    <TableCell>{row.expected}</TableCell>
+                    <TableCell>{isLow ? "–" : row.received}</TableCell>
+                    <TableCell>{confidenceIcon}</TableCell>
+                    <TableCell>{!isEnabled ? <Tooltip title="Min. 80% sikkerhed kræves"><span>{button}</span></Tooltip> : button}</TableCell>
+                  </TableRow>
+
                   );
                 })}
               </TableBody>
