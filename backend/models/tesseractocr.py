@@ -8,7 +8,7 @@ import os
 from PIL import ImageDraw
 import pandas as pd
 
-def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_percent=15, right_percent=70):
+def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_percent=15, right_percent=100):
     """Ignore top-right corner for content start, then blank upward-adjusted crop region."""
     ocr_data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DATAFRAME)
     valid_data = ocr_data[(ocr_data.conf != -1) & (ocr_data.text.notna()) & (ocr_data.text.str.strip() != "")]
