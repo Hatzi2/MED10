@@ -14,7 +14,7 @@ body {
   justify-content: flex-start;
   width: 100vw;
   height: 100vh;
-  background-color: white;
+  background-color: #fafafa;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -24,7 +24,7 @@ body {
   max-width: 1000px;
   max-height: 60vh;
   overflow-y: auto;
-  background-color: #fafafa;
+  background-color: #ffffff;
   border-radius: 12px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;

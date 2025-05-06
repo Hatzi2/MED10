@@ -16,7 +16,7 @@ body {
   justify-content: flex-start;
   width: 100vw;
   height: 100vh;
-  background-color: white;
+  background-color: #fafafa;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -77,7 +77,7 @@ button.table-action-button {
   background-color: #ff8308;
   color: white;
   padding: 6px 12px;
-  border-radius: 6px;
+  border-radius: 4px;
   transition: background-color 0.3s ease;
 }
 
@@ -92,7 +92,7 @@ button.table-action-button {
   max-width: 50%;
   height: 100%; /* <-- match table */
   border: 1px solid #ccc;
-  border-radius: 12px;
+  border-radius: 4px;
   overflow: hidden;
   display: flex;
   align-items: stretch; /* <-- ensure inner viewer fills full height */
