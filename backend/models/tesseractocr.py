@@ -5,6 +5,55 @@ import numpy as np
 import json
 import time
 import os
+from PIL import ImageDraw
+import pandas as pd
+
+def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_percent=15, right_percent=70):
+    """Ignore top-right corner for content start, then blank upward-adjusted crop region."""
+    ocr_data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DATAFRAME)
+    valid_data = ocr_data[(ocr_data.conf != -1) & (ocr_data.text.notna()) & (ocr_data.text.str.strip() != "")]
+
+    if valid_data.empty:
+        print("⚠️ No valid text detected. Skipping blanking.")
+        return image
+
+    width, height = image.size
+    right_x_start = int(width * (1 - right_percent / 100))
+    top_y_end = int(height * (top_percent / 100))
+
+    draw = ImageDraw.Draw(image, "RGBA")
+
+    # Draw exclusion zone (semi-transparent red in top-right)
+    exclusion_color = (255, 0, 0, 100)
+    draw.rectangle([(right_x_start, 0), (width, top_y_end)], fill=exclusion_color)
+
+    # Filter out text in exclusion zone
+    filtered_data = valid_data[
+        ~(
+            (valid_data.left >= right_x_start) &
+            (valid_data.top <= top_y_end)
+        )
+    ]
+
+    if filtered_data.empty:
+        print("⚠️ All text was in the exclusion zone. Skipping blanking.")
+        return image
+
+    # Adjust crop start upward slightly and determine crop range
+    start_y_raw = filtered_data['top'].min()
+    erase_y_start = max(0, start_y_raw - buffer_px)
+    crop_height = int(height * (crop_percent / 100.0))
+    erase_y_end = min(height, erase_y_start + crop_height)
+
+    # Draw blanked area (semi-transparent yellow)
+    blank_color = (255, 255, 0, 100)
+    draw.rectangle([(0, erase_y_start), (width, erase_y_end)], fill=blank_color)
+
+    # Actually blank the area for OCR
+    draw.rectangle([(0, erase_y_start), (width, erase_y_end)], fill="white")
+
+    print(f"Blanked from Y={erase_y_start}px to Y={erase_y_end}px (text starts at Y={start_y_raw}, adjusted up by {buffer_px}px)")
+    return image
 
 def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     images = convert_from_path(pdf_path)
@@ -18,6 +67,19 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
     progress_file = os.path.join("Files", "ProgressBar", "progress.json")
 
     for i, image in enumerate(images):
+        if i == 0:
+            image = erase_from_text_start(image, crop_percent=5, buffer_px=10, lang=lang)
+
+        # Save image for inspection
+        if i == 0:
+            # Save only the first page image
+            debug_image_path = output_folder / f"{pdf_path.stem}_page1_debug.png"
+            image.save(debug_image_path)
+            print(f"Saved debug image to {debug_image_path}")
+
+        print(f"Saved page {i + 1} image to {debug_image_path}")
+
+        # OCR processing
         if include_confidence:
             ocr_data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DATAFRAME)
             valid_data = ocr_data[ocr_data.conf != -1]
@@ -32,11 +94,10 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
         extracted_text += f"\n--- Page {i + 1} ---\n{page_text}\n"
 
-        # Update progress JSON with OCR progress
+        # Update progress
         ocr_progress = round((i + 1) / total_pages, 4)
         ocr_status = f"Behandler side {i + 1} af {total_pages}"
 
-        # Preserve existing main progress if present
         main_progress, main_status = 0.0, "Venter på scanning..."
         if os.path.exists(progress_file):
             try:
@@ -54,7 +115,7 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
                 "main": {"progress": main_progress, "status": main_status}
             }, f, ensure_ascii=False)
 
-    # Save text file
+    # Save extracted text
     text_filename = pdf_path.stem + ".txt"
     text_file_path = output_folder / text_filename
     with text_file_path.open("w", encoding="utf-8") as text_file:
@@ -68,14 +129,12 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
     print(f"{pdf_path.name} - Processing Time: {elapsed_time:.2f} seconds")
 
-    # Mark OCR complete
+    # Final progress update
     with open(progress_file, "w", encoding="utf-8") as f:
         json.dump({
             "ocr": {"progress": 1.0, "status": "Scanning færdig"},
             "main": {"progress": main_progress, "status": main_status}
         }, f, ensure_ascii=False)
-
-
 
 def process_all_pdfs(lang="dan", include_confidence=True):
     input_folder = Path("Files/policer-Raw")
@@ -89,8 +148,7 @@ def process_all_pdfs(lang="dan", include_confidence=True):
             print(f"\nProcessing {pdf_file.name}...")
             pdf_to_text(pdf_file, output_folder, lang=lang, include_confidence=include_confidence)
 
-
-# File paths:
+# Run script
 input_folder = Path("Files/policer-Raw")
 output_folder = Path("Files/Policer")
 
