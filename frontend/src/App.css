@@ -27,9 +27,8 @@
   text-align: center;
   background-color: #fafafa;
   padding: 10px;
-  margin-bottom: 24px;
   color: black;
-  border-radius: 12px;
+  border-radius: 4px;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
 }
 
@@ -48,7 +47,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 12px;
+  border-radius: 4px;
   background-color: #fafafa;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
 }
@@ -70,7 +69,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: 12px;
+  border-radius: 4px;
   background-color: #fafafa; /* Slightly different background color */
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Drop shadow */
   padding: 10px; /* Optional padding */
@@ -82,7 +81,7 @@
   justify-content: space-between; /* Space the text and circles apart */
   align-items: center;
   height: 100%; /* Ensures it fills the grid item */
-  border-radius: 6px;
+  border-radius: 2px;
   background-color: #ffffff;
   position: relative; /* Required for absolute positioning of circles */
   padding: 10px 20px; /* Add padding on both sides of the slice box */

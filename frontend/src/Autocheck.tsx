@@ -45,6 +45,9 @@ const Home: React.FC = () => {
     brandpoliceIsGreen, true, true, true, true, true
   ];
 
+  // Placeholder texts to display
+  const placeholderTexts = ["Låntagere", "Lånetilbud", "Ejendomsdetaljer", "Historik", "Vurderingsoplysninger", "Garantistillelse"];
+
   // Poll progress from backend, then navigate with data when done
   const pollProgress = async () => {
     try {
@@ -135,10 +138,10 @@ const Home: React.FC = () => {
         <Grid container spacing={3}>
           <Grid item xs={12} sm={8}>
             <Grid container spacing={3}>
-              {Array.from({ length: 6 }).map((_, index) => (
+              {placeholderTexts.map((text, index) => (
                 <Grid item xs={12} sm={6} key={index}>
                   <Box className="placeholder-box">
-                    <Typography variant="h6">Placeholder {index + 1}</Typography>
+                    <Typography variant="h6">{text}</Typography>
                   </Box>
                 </Grid>
               ))}
@@ -147,23 +150,23 @@ const Home: React.FC = () => {
 
           <Grid item xs={12} sm={4}>
             <Box className="new-component-box">
+
               <Grid container direction="column" spacing={1} style={{ height: "100%" }}>
                 {circleStates.map((isGreen, index) => (
                   <Grid item key={index} style={{ flex: 1 }}>
                     <Box
                       className="slice-box"
                       onClick={() => index === 0 && handleBrandpolice()}
-      sx={{
-        cursor: index === 0 ? 'pointer' : 'default',
-        // only Brandpolice gets the hover border
-        ...(index === 0 && {
-          '&:hover': {
-            border: '2px solid rgb(216, 215, 215)',
-            borderRadius: '4px',
-          },
-        })
-      }}
-      style={{ height: '100%' }}
+                      sx={{
+                        cursor: index === 0 ? 'pointer' : 'default',
+                        ...(index === 0 && {
+                          '&:hover': {
+                            border: '2px solid rgb(216, 215, 215)',
+                            borderRadius: '4px',
+                          },
+                        })
+                      }}
+                      style={{ height: '100%' }}
                     >
                       <Typography variant="h6">
                         {index === 0 ? "Brandpolice" : `Autocheck ${index + 1}`}
