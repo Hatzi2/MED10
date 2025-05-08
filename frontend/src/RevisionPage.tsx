@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   Table,
@@ -32,11 +32,16 @@ interface RowData {
   confidence: string;
 }
 
+/**
+ * RevisionPage component for reviewing document verification results
+ * Allows users to review extracted data against expected values and navigate through PDF highlights
+ */
 const RevisionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { filename, rows } = location.state || {};
 
+  // Default rows if none are provided
   const displayRows: RowData[] =
     rows && rows.length > 0
       ? rows
@@ -46,30 +51,65 @@ const RevisionPage: React.FC = () => {
           { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
         ];
 
+  // PDF file path
   const pdfPath = filename
     ? `http://localhost:5000/pdf/${filename}`
     : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
 
+  // PDF search plugin initialization
   const searchPluginInstance = searchPlugin();
   const { highlight, jumpToNextMatch, clearHighlights } = searchPluginInstance;
-
+  
+  // State for search and highlighting
   const [activeRowId, setActiveRowId] = useState<string | null>(null);
   const [lastSearchTerm, setLastSearchTerm] = useState<string | null>(null);
 
-  const handleSearchClick = async (rowId: string, value: string) => {
-    if (!value || value === "N/A") return;
+  /**
+   * Extracts the search term from a value based on field type
+   * For "Areal:" fields, only extracts the numeric part
+   */
+  const extractSearchTerm = (rowId: string, value: string): string => {
+    if (rowId === "Areal:" && value !== "N/A") {
+      // Remove any "m2" or "m²" text to avoid regex confusion
+      const cleanedValue = value.replace(/m²|m2/gi, "").trim();
+      
+      // Extract the numeric part
+      const numericMatch = cleanedValue.match(/(\d+)/);
+      if (numericMatch && numericMatch[0]) {
+        return numericMatch[0]; // Return just the numbers
+      }
+    }
+    return value;
+  };
 
-    if (activeRowId === rowId && lastSearchTerm === value) {
+  /**
+   * Handles search button clicks
+   * Either continues to next match or starts a new search
+   */
+  const handleSearchClick = async (rowId: string, value: string) => {
+    if (!value || value === "N/A" || value === "-") return;
+
+    const searchTerm = extractSearchTerm(rowId, value);
+    
+    if (activeRowId === rowId && lastSearchTerm === searchTerm) {
+      // Continue to next match
       jumpToNextMatch();
     } else {
+      // Start new search
       clearHighlights();
       setActiveRowId(rowId);
-      setLastSearchTerm(value);
-      await highlight(value);
+      setLastSearchTerm(searchTerm);
+      
+      // Wait for highlight to complete before moving to first match
+      await highlight(searchTerm);
       jumpToNextMatch();
     }
   };
 
+  /**
+   * Handles document rejection
+   * Adds file to rejected list in localStorage and navigates back
+   */
   const handleReject = () => {
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles: string[] = storedRejected ? JSON.parse(storedRejected) : [];
@@ -78,6 +118,10 @@ const RevisionPage: React.FC = () => {
     navigate("/", { state: { rejectedFiles } });
   };
 
+  /**
+   * Handles document acceptance
+   * Removes file from rejected list, adds to accepted list, and navigates back
+   */
   const handleAccept = () => {
     const storedRejected = localStorage.getItem("rejectedFiles");
     let rejectedFiles = storedRejected ? JSON.parse(storedRejected) : [];
@@ -90,6 +134,12 @@ const RevisionPage: React.FC = () => {
     localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
 
     navigate("/", { state: { acceptedFiles } });
+  };
+
+  // Common button style with fixed width
+  const tableButtonStyle = {
+    minWidth: "100px", // Fixed width for both "Hop til" and "Næste" buttons
+    whiteSpace: "nowrap" as const,
   };
 
   return (
@@ -154,10 +204,14 @@ const RevisionPage: React.FC = () => {
                   const isLowConfidence = !isNaN(rawValue) && rawValue < 80;
                   const isMidConfidence = !isNaN(rawValue) && rawValue >= 80 && rawValue < 100;
 
-                  const isActive = activeRowId === row.id && lastSearchTerm === row.received;
-                  const isEnabled = rawValue === 100;
+                  // Enable button only if confidence is above 80
+                  const isEnabled = !isNaN(rawValue) && rawValue >= 80;
+                  
+                  const searchTerm = extractSearchTerm(row.id, row.received);
+                  const isActive = activeRowId === row.id && lastSearchTerm === searchTerm;
                   const buttonLabel = isActive ? "Næste" : "Hop til";
 
+                  // Determine confidence icon based on match percentage
                   let confidenceIcon: React.ReactNode;
                   if (!isNaN(rawValue)) {
                     if (rawValue === 100) confidenceIcon = <CheckCircleIcon color="success" />;
@@ -166,6 +220,9 @@ const RevisionPage: React.FC = () => {
                   } else {
                     confidenceIcon = row.confidence;
                   }
+                  
+                  // Show dash for low confidence matches
+                  const receivedDisplay = (!isNaN(rawValue) && rawValue < 80) ? "-" : row.received;
 
                   const button = (
                     <Button
@@ -173,16 +230,35 @@ const RevisionPage: React.FC = () => {
                       className="table-action-button"
                       onClick={() => handleSearchClick(row.id, row.received)}
                       disabled={!isEnabled}
-                      sx={{ backgroundColor: !isEnabled ? "#ccc" : undefined, color: !isEnabled ? "#666" : undefined, pointerEvents: !isEnabled ? "none" : undefined }}
+                      sx={{ 
+                        ...tableButtonStyle,
+                        backgroundColor: !isEnabled ? "#ccc" : undefined, 
+                        color: !isEnabled ? "#666" : undefined, 
+                        pointerEvents: !isEnabled ? "none" : undefined 
+                      }}
                     >
                       {buttonLabel}
                     </Button>
                   );
 
+                  // Determine if we need to show the partial match warning tooltip
+                  const showPartialMatchWarning = isMidConfidence;
+                  const buttonWithTooltip = showPartialMatchWarning ? (
+                    <Tooltip title="Virker muligvis ikke ved delvist match">
+                      <span>{button}</span>
+                    </Tooltip>
+                  ) : button;
+
                   return (
                     <TableRow
                       key={row.id}
-                      sx={{ backgroundColor: isLowConfidence ? "rgba(255, 0, 0, 0.1)" : isMidConfidence ? "rgba(255, 255, 0, 0.1)" : undefined }}
+                      sx={{ 
+                        backgroundColor: isLowConfidence 
+                          ? "rgba(255, 0, 0, 0.1)" 
+                          : isMidConfidence 
+                            ? "rgba(255, 255, 0, 0.1)" 
+                            : undefined 
+                      }}
                     >
                       <TableCell sx={{ fontWeight: "bold" }}>
                         {row.id}
@@ -193,10 +269,14 @@ const RevisionPage: React.FC = () => {
                         )}
                       </TableCell>
                       <TableCell>{row.expected}</TableCell>
-                      <TableCell>{row.received}</TableCell>
+                      <TableCell>{receivedDisplay}</TableCell>
                       <TableCell>{confidenceIcon}</TableCell>
                       <TableCell>
-                        {!isEnabled ? <Tooltip title="Kan kun bruges ved 100% sikkerhed"><span>{button}</span></Tooltip> : button}
+                        {!isEnabled ? (
+                          <Tooltip title="Knappen er kun aktiv fra delvist match">
+                            <span>{button}</span>
+                          </Tooltip>
+                        ) : buttonWithTooltip}
                       </TableCell>
                     </TableRow>
                   );
@@ -208,16 +288,29 @@ const RevisionPage: React.FC = () => {
 
         <div className="pdf-preview-container">
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
-            <Viewer fileUrl={pdfPath} plugins={[searchPluginInstance]} />
+            <Viewer 
+              fileUrl={pdfPath} 
+              plugins={[searchPluginInstance]}
+            />
           </Worker>
         </div>
       </div>
 
       <div style={{ display: "flex", gap: "12px", marginTop: "20px", justifyContent: "center", alignItems: "center" }}>
-        <Button onClick={handleReject} variant="contained" color="error" sx={{ width: "200px", height: "40px", color: "white" }}>
+        <Button 
+          onClick={handleReject} 
+          variant="contained" 
+          color="error" 
+          sx={{ width: "200px", height: "40px", color: "white" }}
+        >
           Afvis dokument
         </Button>
-        <Button onClick={handleAccept} variant="contained" color="success" sx={{ width: "200px", height: "40px", color: "white" }}>
+        <Button 
+          onClick={handleAccept} 
+          variant="contained" 
+          color="success" 
+          sx={{ width: "200px", height: "40px", color: "white" }}
+        >
           Acceptér dokument
         </Button>
       </div>
