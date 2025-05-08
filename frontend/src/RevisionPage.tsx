@@ -41,15 +41,57 @@ const RevisionPage: React.FC = () => {
   const location = useLocation();
   const { filename, rows } = location.state || {};
 
+  // Process rows to handle Areal units formatting
+  const processRows = (inputRows: RowData[]): RowData[] => {
+    if (!inputRows) return [];
+    
+    return inputRows.map(row => {
+      // Only process Areal rows
+      if (row.id === "Areal:") {
+        // Check if received value contains unit markers
+        const received = row.received;
+        if (received && received !== "N/A") {
+          const expected = row.expected;
+          
+          // Extract numeric part from expected value
+          const expectedNumMatch = expected.match(/(\d+)/);
+          const expectedNum = expectedNumMatch ? expectedNumMatch[0] : "";
+          
+          // Check for unit position in received value
+          if (received.match(/^m2|^kvm/i)) {
+            // Unit is at the beginning
+            const unitMatch = received.match(/^(m2|kvm)/i);
+            const unit = unitMatch ? unitMatch[0] : "m2";
+            return {
+              ...row,
+              expected: `${unit} ${expectedNum}`
+            };
+          } else if (received.match(/m2$|m²$|kvm$/i)) {
+            // Unit is at the end
+            const unitMatch = received.match(/(m2|m²|kvm)$/i);
+            const unit = unitMatch ? unitMatch[0] : "m2";
+            return {
+              ...row,
+              expected: `${expectedNum} ${unit}`
+            };
+          }
+        }
+      }
+      return row;
+    });
+  };
+
   // Default rows if none are provided
-  const displayRows: RowData[] =
-    rows && rows.length > 0
-      ? rows
-      : [
-          { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
-          { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
-          { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
-        ];
+  const defaultRows: RowData[] = [
+    { id: "Adresse:", expected: "N/A", received: "N/A", confidence: "N/A" },
+    { id: "By:", expected: "N/A", received: "N/A", confidence: "N/A" },
+    { id: "Areal:", expected: "N/A", received: "N/A", confidence: "N/A" },
+  ];
+
+  // Process rows with unit handling
+  const displayRows: RowData[] = rows && rows.length > 0 
+    ? processRows(rows) 
+    : defaultRows;
 
   // PDF file path
   const pdfPath = filename
@@ -71,7 +113,7 @@ const RevisionPage: React.FC = () => {
   const extractSearchTerm = (rowId: string, value: string): string => {
     if (rowId === "Areal:" && value !== "N/A") {
       // Remove any "m2" or "m²" text to avoid regex confusion
-      const cleanedValue = value.replace(/m²|m2/gi, "").trim();
+      const cleanedValue = value.replace(/m²|m2|kvm/gi, "").trim();
       
       // Extract the numeric part
       const numericMatch = cleanedValue.match(/(\d+)/);
