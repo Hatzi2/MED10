@@ -8,8 +8,11 @@ import os
 from PIL import ImageDraw
 import pandas as pd
 
-def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_percent=15, right_percent=100):
-    """Ignore top-right corner for content start, then blank upward-adjusted crop region."""
+def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_percent=15, right_percent=100, debug_save_path=None):
+    """Highlight areas with semi-transparent red/yellow directly on RGB image before erasing."""
+    import pytesseract
+    from PIL import ImageDraw
+
     ocr_data = pytesseract.image_to_data(image, lang=lang, output_type=pytesseract.Output.DATAFRAME)
     valid_data = ocr_data[(ocr_data.conf != -1) & (ocr_data.text.notna()) & (ocr_data.text.str.strip() != "")]
 
@@ -23,11 +26,9 @@ def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_
 
     draw = ImageDraw.Draw(image, "RGBA")
 
-    # Draw exclusion zone (semi-transparent red in top-right)
-    exclusion_color = (255, 0, 0, 100)
-    draw.rectangle([(right_x_start, 0), (width, top_y_end)], fill=exclusion_color)
+    # ✅ Draw semi-transparent red (exclusion zone)
+    draw.rectangle([(right_x_start, 0), (width, top_y_end)], fill=(255, 0, 0, 100))
 
-    # Filter out text in exclusion zone
     filtered_data = valid_data[
         ~(
             (valid_data.left >= right_x_start) &
@@ -39,23 +40,34 @@ def erase_from_text_start(image, crop_percent=25, buffer_px=10, lang="dan", top_
         print("⚠️ All text was in the exclusion zone. Skipping blanking.")
         return image
 
-    # Adjust crop start upward slightly and determine crop range
     start_y_raw = filtered_data['top'].min()
     erase_y_start = max(0, start_y_raw - buffer_px)
     crop_height = int(height * (crop_percent / 100.0))
     erase_y_end = min(height, erase_y_start + crop_height)
 
-    # Draw blanked area (semi-transparent yellow)
-    blank_color = (255, 255, 0, 100)
-    draw.rectangle([(0, erase_y_start), (width, erase_y_end)], fill=blank_color)
+    # ✅ Draw semi-transparent yellow (erase zone)
+    draw.rectangle([(0, erase_y_start), (width, erase_y_end)], fill=(255, 255, 0, 100))
 
-    # Actually blank the area for OCR
+    # ✅ Save before white-out
+    if debug_save_path:
+        image.save(debug_save_path)
+        print(f"✅ Debug image saved to {debug_save_path}")
+
+    # ✅ Now actually erase
     draw.rectangle([(0, erase_y_start), (width, erase_y_end)], fill="white")
 
-    print(f"Blanked from Y={erase_y_start}px to Y={erase_y_end}px (text starts at Y={start_y_raw}, adjusted up by {buffer_px}px)")
+    print(f"✂️ Blanked from Y={erase_y_start}px to Y={erase_y_end}px (text starts at Y={start_y_raw}, adjusted up by {buffer_px}px)")
     return image
 
+
 def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
+    from pdf2image import convert_from_path
+    import numpy as np
+    import pytesseract
+    import json
+    import os
+    import time
+
     images = convert_from_path(pdf_path)
     extracted_text = ""
     confidence_scores = []
@@ -68,16 +80,13 @@ def pdf_to_text(pdf_path, output_folder, lang="dan", include_confidence=True):
 
     for i, image in enumerate(images):
         if i == 0:
-            image = erase_from_text_start(image, crop_percent=5, buffer_px=10, lang=lang)
-
-        # Save image for inspection
-        if i == 0:
-            # Save only the first page image
             debug_image_path = output_folder / f"{pdf_path.stem}_page1_debug.png"
-            image.save(debug_image_path)
-            print(f"Saved debug image to {debug_image_path}")
+            image = erase_from_text_start(image, crop_percent=5, buffer_px=10, lang=lang, debug_save_path=debug_image_path)
 
-        print(f"Saved page {i + 1} image to {debug_image_path}")
+
+
+        if i == 0:
+            print(f"Saved page {i + 1} image to {debug_image_path}")
 
         # OCR processing
         if include_confidence:

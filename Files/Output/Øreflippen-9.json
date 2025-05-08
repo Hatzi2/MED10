@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Øreflippen 9",
+        "received": "Øreflippen 9",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "119",
+        "received": "11 %",
+        "confidence": "75.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Kløvedal 6969",
+        "received": "6969 Kløvedal",
+        "confidence": "100.0%"
+    }
+]
