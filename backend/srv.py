@@ -15,6 +15,14 @@ def serve_pdf(filename):
     pdf_dir = os.path.join(os.path.dirname(app.root_path), 'Files', 'policer-Raw')
     return send_from_directory(pdf_dir, filename)
 
+@app.route('/debug/<path:filename>')
+def serve_debug_image(filename):
+    debug_dir = os.path.join(os.path.dirname(app.root_path), 'Files', 'Policer')
+    if not os.path.isdir(debug_dir):
+        # fail fast if the folder doesn't exist
+        return jsonify({"error": f"Debug folder not found: {debug_dir}"}), 404
+    return send_from_directory(debug_dir, filename)
+
 @app.route("/run-script", methods=["POST"])
 def run_script():
     data = request.get_json()

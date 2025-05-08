@@ -10,12 +10,18 @@ import {
   Paper,
   Button,
   Tooltip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  IconButton,
 } from "@mui/material";
 import { yellow } from "@mui/material/colors";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import RemoveCircleIcon from "@mui/icons-material/RemoveCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
+import BugReportIcon from "@mui/icons-material/BugReport";
+import CloseIcon from "@mui/icons-material/Close";
 import logo from "./assets/logo.png";
 import "./RevisionPage.css";
 
@@ -40,6 +46,10 @@ const RevisionPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { filename, rows } = location.state || {};
+  
+  // State for debug image dialog
+  const [debugDialogOpen, setDebugDialogOpen] = useState(false);
+  const [debugImagePath, setDebugImagePath] = useState("");
 
   // Process rows to handle Areal units formatting
   const processRows = (inputRows: RowData[]): RowData[] => {
@@ -97,6 +107,15 @@ const RevisionPage: React.FC = () => {
   const pdfPath = filename
     ? `http://localhost:5000/pdf/${filename}`
     : "https://dagrs.berkeley.edu/sites/default/files/2020-01/sample.pdf";
+
+  // Generate debug image path based on PDF filename
+  useEffect(() => {
+    if (filename) {
+      // Extract just the base filename without extension
+      const baseFilename = filename.replace(/\.[^/.]+$/, "");
+      setDebugImagePath(`http://localhost:5000/debug/${baseFilename}_page1_debug.png`);
+    }
+  }, [filename]);
 
   // PDF search plugin initialization
   const searchPluginInstance = searchPlugin();
@@ -176,6 +195,20 @@ const RevisionPage: React.FC = () => {
     localStorage.setItem("acceptedFiles", JSON.stringify(acceptedFiles));
 
     navigate("/", { state: { acceptedFiles } });
+  };
+
+  /**
+   * Opens the debug image dialog
+   */
+  const handleOpenDebugDialog = () => {
+    setDebugDialogOpen(true);
+  };
+
+  /**
+   * Closes the debug image dialog
+   */
+  const handleCloseDebugDialog = () => {
+    setDebugDialogOpen(false);
   };
 
   // Common button style with fixed width
@@ -328,7 +361,34 @@ const RevisionPage: React.FC = () => {
           </div>
         </TableContainer>
 
-        <div className="pdf-preview-container">
+        <div className="pdf-preview-container" style={{ position: "relative" }}>
+          {/* Debug button in top right corner */}
+          <Tooltip title="Vis pre-processeret billede">
+            <IconButton
+              onClick={handleOpenDebugDialog}
+              sx={{
+                position: "absolute",
+                top: "5px",
+                right: "18px",
+                zIndex: 10,
+                width: 37,
+                height: 37,
+                backgroundColor: "#ff8308",
+                color: "white",
+                boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.3)",
+                "&:hover": {
+                  backgroundColor: "#aa5807",
+                },
+                // Increase icon size
+                '& .MuiSvgIcon-root': {
+                  fontSize: '1.75rem'
+                }
+              }}
+            >
+              <BugReportIcon />
+            </IconButton>
+          </Tooltip>
+          
           <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js">
             <Viewer 
               fileUrl={pdfPath} 
@@ -356,6 +416,44 @@ const RevisionPage: React.FC = () => {
           Acceptér dokument
         </Button>
       </div>
+
+      {/* Debug Image Dialog */}
+      <Dialog
+        open={debugDialogOpen}
+        onClose={handleCloseDebugDialog}
+        maxWidth="lg"
+        fullWidth
+      >
+      <DialogTitle>
+        Ignoreret indhold:
+        &nbsp;<span className="red-indicator" />&nbsp;
+        Typisk logo og firmanavn,
+        &nbsp;<span className="yellow-indicator" />&nbsp;
+        Formodet tilsendingsadresse.
+        <IconButton onClick={handleCloseDebugDialog} size="small" sx={{ position: "absolute", right: 8, top: 8 }}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+        <DialogContent>
+          {debugImagePath && (
+            <img 
+              src={debugImagePath} 
+              alt="Debug visualisering" 
+              style={{ width: "100%", height: "auto" }}
+              onError={(e) => {
+                // If image fails to load, show a placeholder with error message
+                const imgElement = e.currentTarget;
+                imgElement.onerror = null; // Prevent infinite error loop
+                imgElement.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23ccc' d='M21 5v6.59l-3-3.01-4 4.01-4-4-4 4-3-3.01V5c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2zm-3 6.42l3 3.01V19c0 1.1-.9 2-2 2H5c-1.1 0-2-.9-2-2v-6.58l3 2.99 4-4 4 4 4-4z'/%3E%3C/svg%3E";
+                imgElement.alt = "Kunne ikke indlæse debug billede";
+                imgElement.style.backgroundColor = "#f0f0f0";
+                imgElement.style.padding = "100px";
+                imgElement.style.boxSizing = "border-box";
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

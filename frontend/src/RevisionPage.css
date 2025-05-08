@@ -72,6 +72,25 @@ body {
   padding: 10px;
 }
 
+.red-indicator,
+.yellow-indicator {
+  display: inline-block;      /* allow width/height on a span */
+  vertical-align: middle;     /* line up with text */
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  margin: 0 0.25em;           /* small horizontal gap */
+}
+
+.red-indicator {
+  background-color: red;
+}
+
+.yellow-indicator {
+  background-color: rgb(255, 196, 0);
+}
+
+
 /* Button styling */
 button.table-action-button {
   background-color: #ff8308;
