@@ -2,8 +2,8 @@
     {
         "id": "Adresse:",
         "expected": "Kluddermors Passage 18",
-        "received": "Kluddermors Passage 5555",
-        "confidence": "86.95652173913044%"
+        "received": "Kluddermors Passage 18",
+        "confidence": "100.0%"
     },
     {
         "id": "Areal:",

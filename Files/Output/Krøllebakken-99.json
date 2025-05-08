@@ -1,0 +1,20 @@
+[
+    {
+        "id": "Adresse:",
+        "expected": "Krøllebakken 99",
+        "received": "Krøllebakken 99",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "Areal:",
+        "expected": "217",
+        "received": "217 m2",
+        "confidence": "100.0%"
+    },
+    {
+        "id": "By:",
+        "expected": "Eventyrby 9999",
+        "received": "9999 Eventyrby",
+        "confidence": "100.0%"
+    }
+]
