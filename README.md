@@ -1,4 +1,4 @@
-# MED10 Document Processing Suite
+# Document Processing Application
 
 This is a repository for comprehensive document processing application designed to extract, analyze, and manage information from a variety of document formats, including PDFs and images. Leveraging advanced OCR technologies such as Tesseract, as well as machine learning search models like FAISS, this application streamlines the workflow for digitizing, validating, and organizing documents. The system features a Python backend for processing and a modern React web-based frontend for user interaction.
 
