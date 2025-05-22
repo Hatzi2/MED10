@@ -1,10 +1,12 @@
+# MED10 Document Processing Suite
+
+This is a repository for comprehensive document processing application designed to extract, analyze, and manage information from a variety of document formats, including PDFs and images. Leveraging advanced OCR technologies such as Tesseract, as well as machine learning search models like FAISS, this application streamlines the workflow for digitizing, validating, and organizing documents. The system features a Python backend for processing and a modern React web-based frontend for user interaction.
+
 # Setup Guide
 
 ## Table of Contents
 - [OCR Setup](#ocr-setup)
   - [Tesseract OCR](#tesseract-ocr)
-  - [Poppler for Windows](#poppler-for-windows)
-- [Ollama Setup](#ollama-setup)
 - [Python Environment Setup](#python-environment-setup)
 - [License](#license)
 
@@ -22,34 +24,6 @@ To set up Tesseract OCR, follow these steps:
      - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to the Tesseract-OCR directory (e.g., C:\Program Files\Tesseract-OCR).
    - Alternatively, follow the guide on GeeksforGeeks for using OCR: [GeeksforGeeks OCR Setup](https://www.geeksforgeeks.org/python-reading-contents-of-pdf-using-ocr-optical-character-recognition/)
 
-### Poppler for Windows
-To set up Poppler for Windows, follow these steps:
-
-1. **Download and Install Poppler:**
-   - GitHub Releases: [Poppler for Windows](https://github.com/oschwartz10612/poppler-windows/releases)
-
-2. **Add Poppler to PATH:**
-   - Ensure the Poppler directory is added to your system's PATH environment variable.
-     - **Windows**: Press the Windows button and search for "Edit the system environment variables". Click "Environment Variables". Under System Variables, find PATH, double-click and press "New". Add the path to Poppler's bin directory. It's recommended to move the Poppler directory to C:\Program Files. An example of a correct PATH would be C:\Program Files\poppler-24.08.0\Library\bin.
-
-## Ollama Setup
-
-To set up Ollama, follow these steps:
-
-1. **Visit the Ollama Website:**
-   - [Ollama](https://ollama.com/)
-
-2. **OPTIONAL: Follow the Comprehensive Guide for Running Ollama on Windows:**
-   - Blog Post: [Running Ollama on Windows - A Comprehensive Guide](https://collabnix.com/running-ollama-on-windows-a-comprehensive-guide/)
-
-3. **Run Ollama Command:**
-   - Use the following command examples to install the model you intend to use:
-     ```bash
-     ollama run llama3.2
-     ollama run deepseek-r1
-     ollama run mistral
-     ollama run phi4
-     ```
 
 ## Python Environment Setup
 
@@ -67,7 +41,7 @@ To set up Python packages for your environment, follow these steps:
 [Download Node Version Manager] NVM Setup.Exe (https://github.com/coreybutler/nvm-windows/releases)
 Open CMD and run the following commands: nvm install 20.11.1 -> nvm use 20.11.1 -> Verify: node -v -> You should see something like: "v20.11.1"
 
-## Det herunder er supposedly ikke nødvendigt, bare npm install
+## Det herunder er supposedly ikke nï¿½dvendigt, bare npm install
 In the frontend directory run the following commands in a cmd -> npm install pdfjs-dist@3.0.279 -> npm install @react-pdf-viewer/core@3.12.0 @react-pdf-viewer/default-layout@3.12.0
 Dinally -> npm install @react-pdf-viewer/search
 ## License
